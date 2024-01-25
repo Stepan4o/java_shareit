@@ -76,8 +76,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAllItemsByUserId
-            (@RequestHeader(USER_ID) Long userId) {
+    public List<ItemDto> getAllItemsByUserId(@RequestHeader(USER_ID) Long userId) {
 
         log.debug("GET: /items ownerId:{}", userId);
         return itemService.getAllItemsByUserId(userId);
