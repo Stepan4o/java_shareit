@@ -3,6 +3,7 @@ package ru.practicum.shareit.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -15,7 +16,9 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
+    public ErrorResponse handleMethodArgumentNotValidException(
+            final MethodArgumentNotValidException exception
+    ) {
         log.error("Ошибка валидации! Поле '{}' {}",
                 Objects.requireNonNull(exception.getFieldError()).getField(),
                 Objects.requireNonNull(exception.getFieldError()).getDefaultMessage()
@@ -29,15 +32,37 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleAlreadyExistException(final AlreadyExistException exception) {
+    public ErrorResponse handleAlreadyExistException(
+            final AlreadyExistException exception
+    ) {
         log.error(exception.getMessage());
         return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundException(final NotFoundException exception) {
+    public ErrorResponse handleNotFoundException(
+            final NotFoundException exception
+    ) {
         log.error(exception.getMessage());
         return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleAccessDeniedException(
+            final AccessDeniedException exception
+    ) {
+        log.error(exception.getMessage());
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMissingRequestHeaderException(
+            final MissingRequestHeaderException exception
+    ) {
+        log.error("Некорректное значение UserId");
+        return new ErrorResponse("Некорректное значение UserId");
     }
 }

@@ -20,27 +20,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserById(Long id) {
-        return UserMapper.userDto(repository.findById(id));
+        return UserMapper.toUserDto(repository.findById(id));
     }
 
     @Override
     public UserDto addUser(UserDto userDto) {
-        User user = UserMapper.user(userDto);
-        return UserMapper.userDto(repository.save(user));
+        User user = UserMapper.toUser(userDto);
+        return UserMapper.toUserDto(repository.save(user));
     }
 
     @Override
     public List<UserDto> getUsers() {
         return repository.findAll()
                 .stream()
-                .map(UserMapper::userDto)
+                .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public UserDto patchUpdateUser(UserDto userDto, Long id) {
-        User user = UserMapper.user(userDto);
-        return UserMapper.userDto(repository.update(user, id));
+        User user = UserMapper.toUser(userDto);
+        return UserMapper.toUserDto(repository.update(user, id));
     }
 
     @Override
