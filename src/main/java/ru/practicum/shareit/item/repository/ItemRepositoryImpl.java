@@ -6,10 +6,8 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 @Component
@@ -27,21 +25,38 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public Item update(ItemDto itemDto, Long id, Long userId) {
         Item item = getById(id);
+
         if (Objects.equals(item.getUserId(), userId)) {
-            if (itemDto.getName() != null) {
-                item.setName(itemDto.getName());
-            }
-            if (itemDto.getDescription() != null) {
-                item.setDescription(itemDto.getDescription());
-            }
-            if (itemDto.getAvailable() != null) {
-                item.setAvailable(itemDto.getAvailable());
-            }
+            Map<String, BiConsumer<Item, ItemDto>> propertyUpdaters = new HashMap<>();
+            propertyUpdaters.put("name", (i, iDto) -> i.setName(iDto.getName()));
+            propertyUpdaters.put("description", (i, iDto) -> i.setDescription(iDto.getDescription()));
+            propertyUpdaters.put("available", (i, iDto) -> i.setAvailable(iDto.getAvailable()));
+
+            propertyUpdaters.forEach((property, updater) -> {
+                switch (property) {
+                    case "name":
+                        if (itemDto.getName() != null)
+                            updater.accept(item, itemDto);
+
+                        break;
+                    case "description":
+                        if (itemDto.getDescription() != null)
+                            updater.accept(item, itemDto);
+
+                        break;
+                    case "available":
+                        if (itemDto.getAvailable() != null)
+                            updater.accept(item, itemDto);
+
+                        break;
+                }
+            });
         } else {
             throw new AccessDeniedException(String.format(
                     "Пользователь id:%d не является владельцем вещи", userId
             ));
         }
+
         return item;
     }
 

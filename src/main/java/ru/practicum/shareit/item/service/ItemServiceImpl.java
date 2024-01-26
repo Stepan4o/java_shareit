@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -12,6 +13,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
@@ -28,10 +30,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemById(Long id) {
+    public ItemDto getItemById(Long id, Long userId) {
         Item item = itemRepository.getById(id);
-        return ItemMapper.toItemDto(itemRepository.getById(item.getId())
-        );
+        User savedUser = userRepository.findById(userId);
+
+        log.debug("userId:{} поиск вещи по itemId:{}", savedUser.getId(), id);
+        return ItemMapper.toItemDto(itemRepository.getById(item.getId()));
     }
 
     @Override
@@ -45,9 +49,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItemsBySubstring(String text) {
+    public List<ItemDto> getItemsBySubstring(String text, Long userId) {
         List<Item> itemList = itemRepository.findBySubstring(text);
+        User savedUser = userRepository.findById(userId);
 
+        log.debug("userId:{} поиск вещи по строке text:{}", savedUser.getId(), text);
         return itemList.stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());

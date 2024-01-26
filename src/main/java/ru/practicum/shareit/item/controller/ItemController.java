@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/items")
 public class ItemController {
-    private static final String USER_ID = "X-Sharer-User-Id";
+    private static final String HEADER_USER_ID = "X-Sharer-User-Id";
 
     @Autowired
     private final ItemService itemService;
@@ -26,7 +26,7 @@ public class ItemController {
     public ItemDto addItem(
             @Valid
             @RequestBody ItemDto itemDto,
-            @RequestHeader(USER_ID) Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
         log.debug("POST: /items ownerId:{}", userId);
@@ -36,7 +36,7 @@ public class ItemController {
     @PatchMapping("/{id}")
     public ItemDto patchUpdate(
             @RequestBody ItemDto itemDto,
-            @RequestHeader(USER_ID) Long userId,
+            @RequestHeader(HEADER_USER_ID) Long userId,
             @PathVariable Long id
     ) {
 
@@ -46,38 +46,31 @@ public class ItemController {
 
     @GetMapping("/{id}")
     public ItemDto getItemById(
-            @RequestHeader(value = USER_ID, required = false) Long userId,
+            @RequestHeader(HEADER_USER_ID) Long userId,
             @PathVariable Long id
     ) {
-        /*
-        Не очень понял как в рамках этого ТЗ в данном методе
-        использовать приходящий userId. Ведь просматривать вещь по itemId
-        может любой пользователь. Или это "некая проверка"
-        на то, авторизован ли пользователь или нет?
-        На время первой отправки поставил required=false
-        Такая же ситуация в методе ниже. Буду рад комментарию, сделаю как нужно :)
-        */
+
         log.debug("GET: /items/{}", id);
-        return itemService.getItemById(id);
+        return itemService.getItemById(id, userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> getItemsBySubstring(
             @RequestParam(required = false) String text,
-            @RequestHeader(value = USER_ID, required = false) Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
         log.debug("GET: /items/search?text={}", text);
         if (text == null || text.isBlank()) {
             return List.of();
         } else {
-            return itemService.getItemsBySubstring(text.toLowerCase());
+            return itemService.getItemsBySubstring(text.toLowerCase(), userId);
         }
     }
 
     @GetMapping
     public List<ItemDto> getAllItemsByUserId(
-            @RequestHeader(USER_ID) Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
         log.debug("GET: /items ownerId:{}", userId);

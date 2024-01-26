@@ -10,9 +10,9 @@ public interface ItemService {
 
     ItemDto patchUpdateItem(ItemDto itemDto, Long id, Long userId);
 
-    ItemDto getItemById(Long id);
+    ItemDto getItemById(Long id, Long userId);
 
     List<ItemDto> getAllItemsByUserId(Long userId);
 
-    List<ItemDto> getItemsBySubstring(String text);
+    List<ItemDto> getItemsBySubstring(String text, Long userId);
 }
