@@ -1,11 +1,11 @@
-package ru.practicum.shareit.item.controller;
+package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -23,18 +23,18 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto addItem(
+    public ItemDto createItem(
             @Valid
             @RequestBody ItemDto itemDto,
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
         log.debug("POST: /items ownerId:{}", userId);
-        return itemService.addItem(itemDto, userId);
+        return itemService.createItem(itemDto, userId);
     }
 
     @PatchMapping("/{id}")
-    public ItemDto patchUpdate(
+    public ItemDto patchUpdateItem(
             @RequestBody ItemDto itemDto,
             @RequestHeader(HEADER_USER_ID) Long userId,
             @PathVariable Long id
@@ -60,19 +60,14 @@ public class ItemController {
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
-        log.debug("GET: /items/search?text={}", text);
-        if (text == null || text.isBlank()) {
-            return List.of();
-        } else {
-            return itemService.getItemsBySubstring(text.toLowerCase(), userId);
-        }
+        log.debug("GET: /items/search?searchText={}", text);
+            return itemService.getItemsBySubstring(text, userId);
     }
 
     @GetMapping
     public List<ItemDto> getAllItemsByUserId(
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
-
         log.debug("GET: /items ownerId:{}", userId);
         return itemService.getAllItemsByUserId(userId);
     }

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.item.model;
 
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +11,7 @@ import javax.validation.constraints.Size;
 @Builder
 public class ItemDto {
     private Long id;
-    private Long userId;
+//    private Long userId;
     @NotBlank
     @Size(max = 50)
     private String name;

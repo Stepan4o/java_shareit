@@ -3,15 +3,18 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.exception.AccessDeniedException;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.model.ItemDto;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.UserRepository;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.function.BiConsumer;
+
 
 @Slf4j
 @Service
@@ -22,50 +25,98 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
 
     @Override
-    public ItemDto addItem(ItemDto itemDto, Long userId) {
-        User savedUser = userRepository.findById(userId);
-        itemDto.setUserId(savedUser.getId());
+    public ItemDto createItem(ItemDto itemDto, Long userId) {
+        User savedUser = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException(
+                        String.format("Пользователь с id:%d не найден", userId)
+                ));
         Item item = ItemMapper.toItem(itemDto);
-        return ItemMapper.toItemDto(itemRepository.save(item));
+        item.setUser(savedUser);
+        itemRepository.save(item);
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
     public ItemDto getItemById(Long id, Long userId) {
-        Item item = itemRepository.getById(id);
-        User savedUser = userRepository.findById(userId);
-
-        log.debug("userId:{} поиск вещи по itemId:{}", savedUser.getId(), id);
-        return ItemMapper.toItemDto(itemRepository.getById(item.getId()));
+        Item item = itemRepository.findById(id).orElseThrow(
+                () -> new NotFoundException(
+                        String.format("Предмет с id:%d не найден", id)
+                ));
+        log.debug("userId:{} поиск вещи по itemId:{}", userId, item.getId());
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
     public List<ItemDto> getAllItemsByUserId(Long userId) {
-        User savedUser = userRepository.findById(userId);
-        List<Item> itemList = itemRepository.findAllByUserId(savedUser.getId());
+        User savedUser = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException(
+                        String.format("Пользователь с id:%d не найден", userId)
+                ));
+        List<Item> itemList = itemRepository.findByUserId(savedUser.getId());
 
-        return itemList.stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        return ItemMapper.toItemsDto(itemList);
     }
 
     @Override
-    public List<ItemDto> getItemsBySubstring(String text, Long userId) {
-        List<Item> itemList = itemRepository.findBySubstring(text);
-        User savedUser = userRepository.findById(userId);
+    public List<ItemDto> getItemsBySubstring(String searchText, Long userId) {
+        if (searchText.isBlank()) {
+            return new ArrayList<>();
+        } else {
+            List<Item> itemList = itemRepository
+                    .findAllByAvailableTrueAndDescriptionContainingIgnoreCaseOrNameContainingIgnoreCase(
+                            searchText, searchText
+                    );
 
-        log.debug("userId:{} поиск вещи по строке text:{}", savedUser.getId(), text);
-        return itemList.stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+            log.debug("userId:{} поиск вещи по строке text:{}", userId, searchText);
+            return ItemMapper.toItemsDto(itemList);
+        }
     }
 
     @Override
     public ItemDto patchUpdateItem(ItemDto itemDto, Long id, Long userId) {
-        User savedUser = userRepository.findById(userId);
-        Item item = itemRepository.getById(id);
+        Item item = itemRepository.findById(id).orElseThrow(
+                () -> new NotFoundException(
+                        String.format("Вещь с id:%d не найдена", id)
+                ));
 
-        return ItemMapper.toItemDto(itemRepository.update(
-                itemDto, item.getId(), savedUser.getId()
-        ));
+        if (Objects.equals(item.getUser().getId(), userId)) {
+
+            Item updatedItem = updateItemFields(item, itemDto);
+            itemRepository.save(updatedItem);
+            return ItemMapper.toItemDto(updatedItem);
+
+        } else {
+            throw new AccessDeniedException(
+                    "Внесение изменений доступно только владельцам"
+            );
+        }
+    }
+
+    private Item updateItemFields(Item item, ItemDto itemDto) {
+        Map<String, BiConsumer<Item, ItemDto>> fieldsUpdaters = new HashMap<>();
+        fieldsUpdaters.put("name", (i, iDto) -> i.setName(iDto.getName()));
+        fieldsUpdaters.put("description", (i, iDto) -> i.setDescription(iDto.getDescription()));
+        fieldsUpdaters.put("available", (i, iDto) -> i.setAvailable(iDto.getAvailable()));
+
+        fieldsUpdaters.forEach((field, updater) -> {
+            switch (field) {
+                case "name":
+                    if (itemDto.getName() != null) {
+                        updater.accept(item, itemDto);
+                    }
+                    break;
+                case "description":
+                    if (itemDto.getDescription() != null) {
+                        updater.accept(item, itemDto);
+                    }
+                    break;
+                case "available":
+                    if (itemDto.getAvailable() != null) {
+                        updater.accept(item, itemDto);
+                    }
+                    break;
+            }
+        });
+        return item;
     }
 }
