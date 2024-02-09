@@ -48,15 +48,16 @@ public class ItemServiceImpl implements ItemService {
                         String.format("Предмет с id:%d не найден", id)
                 ));
         if (item.getUser().getId().equals(userId)) {
-            Booking nextBooking = bookingRepository
+            Optional<Booking> nextBooking = bookingRepository
                     .findFirstByItemUserIdAndStartAfterOrderByStartAsc(userId, LocalDateTime.now());
-            Booking lastBooking = bookingRepository
+            Optional<Booking> lastBooking = bookingRepository
                     .findFirstByItemUserIdAndEndBeforeOrderByEndAsc(userId, LocalDateTime.now());
 
-            ItemDto dto = ItemMapper.toItemWithBookingDto(item);
-            dto.setNextBooking(BookingMapper.toNextBookingDto(nextBooking));
-            dto.setLastBooking(BookingMapper.toLastBookingDto(lastBooking));
-            return dto;
+            ItemDto itemDto = ItemMapper.toItemWithBookingDto(item);
+            nextBooking.ifPresent(booking -> itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
+            lastBooking.ifPresent(booking -> itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
+
+            return itemDto;
         } else {
             log.debug("userId:{} поиск вещи по itemId:{}", userId, item.getId());
             return ItemMapper.toItemDto(item);
