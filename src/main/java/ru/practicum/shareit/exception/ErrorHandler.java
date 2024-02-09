@@ -79,4 +79,14 @@ public class ErrorHandler {
         log.error("Некорректное значение UserId");
         return new ErrorResponse("Некорректное значение UserId");
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleNotAvailableException(
+            final NotAvailableException exception
+
+    ) {
+        log.error(exception.getMessage());
+        return new ErrorResponse(exception.getMessage());
+    }
 }

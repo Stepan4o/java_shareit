@@ -3,6 +3,9 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.BookingMapper;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.AccessDeniedException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.ItemDto;
@@ -12,6 +15,7 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -23,6 +27,7 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Long userId) {
@@ -42,8 +47,20 @@ public class ItemServiceImpl implements ItemService {
                 () -> new NotFoundException(
                         String.format("Предмет с id:%d не найден", id)
                 ));
-        log.debug("userId:{} поиск вещи по itemId:{}", userId, item.getId());
-        return ItemMapper.toItemDto(item);
+        if (item.getUser().getId().equals(userId)) {
+            Booking nextBooking = bookingRepository
+                    .findFirstByItemUserIdAndStartAfterOrderByStartAsc(userId, LocalDateTime.now());
+            Booking lastBooking = bookingRepository
+                    .findFirstByItemUserIdAndEndBeforeOrderByEndAsc(userId, LocalDateTime.now());
+
+            ItemDto dto = ItemMapper.toItemWithBookingDto(item);
+            dto.setNextBooking(BookingMapper.toNextBookingDto(nextBooking));
+            dto.setLastBooking(BookingMapper.toLastBookingDto(lastBooking));
+            return dto;
+        } else {
+            log.debug("userId:{} поиск вещи по itemId:{}", userId, item.getId());
+            return ItemMapper.toItemDto(item);
+        }
     }
 
     @Override
@@ -53,8 +70,24 @@ public class ItemServiceImpl implements ItemService {
                         String.format("Пользователь с id:%d не найден", userId)
                 ));
         List<Item> itemList = itemRepository.findByUserId(savedUser.getId());
+        if (itemList.get(0).getUser().getId().equals(userId)) {
+            List<ItemDto> res = new ArrayList<>();
+            for (Item i : itemList) {
+                Optional<Booking> nextBooking = bookingRepository
+                        .findFirstByItemIdAndStartAfterOrderByStartAsc(i.getId(), LocalDateTime.now());
+                Optional<Booking> lastBooking = bookingRepository
+                        .findFirstByItemIdAndEndBeforeOrderByEndAsc(i.getId(), LocalDateTime.now());
 
-        return ItemMapper.toItemsDto(itemList);
+                ItemDto itemDto = ItemMapper.toItemWithBookingDto(i);
+
+                nextBooking.ifPresent(booking -> itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
+                lastBooking.ifPresent(booking -> itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
+                res.add(itemDto);
+            }
+            return res;
+        } else {
+            return ItemMapper.toItemsDto(itemList);
+        }
     }
 
     @Override

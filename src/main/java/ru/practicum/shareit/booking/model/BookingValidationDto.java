@@ -1,23 +1,18 @@
 package ru.practicum.shareit.booking.model;
 
-
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.item.model.ItemBookingDto;
-import ru.practicum.shareit.user.model.UserBookerDto;
-
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class BookingDto {
+public class BookingValidationDto {
     private Long id;
 
-    private ItemBookingDto item;
-
-    private UserBookerDto booker;
+    @NotNull
+    private Long itemId;
 
     @NotNull
     @FutureOrPresent(message = "Некорректно указана дата")
@@ -27,5 +22,4 @@ public class BookingDto {
     @FutureOrPresent(message = "Некорректно указана дата")
     private LocalDateTime end;
 
-    private Status status;
 }

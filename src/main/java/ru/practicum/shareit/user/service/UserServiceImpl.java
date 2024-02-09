@@ -79,22 +79,5 @@ public class UserServiceImpl implements UserService {
             }
         });
         return user;
-//        propertyUpdaters.put("name", (u, uDto) -> {
-//            if (uDto.getName() != null) {
-//                u.setName(uDto.getName());
-//            }
-//        });
-//
-//        propertyUpdaters.put("email", (u, uDto) -> {
-//            if (uDto.getEmail() != null) {
-//                u.setEmail(uDto.getEmail());
-//            }
-//        });
-//        propertyUpdaters.forEach((property, updaters) -> {
-//                    updaters.accept(user, userDto);
-//                }
-//        );
-//        return user;
-
     }
 }

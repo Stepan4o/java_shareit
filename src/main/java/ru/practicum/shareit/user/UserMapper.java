@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import lombok.experimental.UtilityClass;
+import ru.practicum.shareit.user.model.UserBookerDto;
 import ru.practicum.shareit.user.model.UserDto;
 import ru.practicum.shareit.user.model.User;
 
@@ -19,7 +20,6 @@ public class UserMapper {
     }
 
     public User toUser(UserDto userDto) {
-//        return User user = new User(userDto.getId(), userDto.getName(), userDto.getEmail());
         User user = new User();
         user.setId(userDto.getId());
         user.setName(userDto.getName());
@@ -33,5 +33,11 @@ public class UserMapper {
             usersDto.add(toUserDto(u));
         }
         return usersDto;
+    }
+
+    public UserBookerDto toBookerDto(User user) {
+        return UserBookerDto.builder()
+                .id(user.getId())
+                .build();
     }
 }

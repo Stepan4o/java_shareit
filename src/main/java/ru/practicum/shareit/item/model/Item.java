@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.user.model.User;
 
@@ -18,9 +17,6 @@ public class Item {
     @ManyToOne//(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-//    @Column(name = "user_id")
-//    private Long userId;
 
     @Column(name = "name", nullable = false)
     private String name;
