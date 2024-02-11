@@ -7,7 +7,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +15,7 @@ public class CommentMapper {
     public Comment toComment (CommentDtoIn commentDtoIn, User user, Item item) {
         Comment comment = new Comment();
         comment.setText(commentDtoIn.getText());
-        comment.setCreated(LocalDateTime.now());
+        comment.setCreated(commentDtoIn.getCreate());
         comment.setAuthor(user);
         comment.setItem(item);
         return comment;

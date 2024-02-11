@@ -22,6 +22,7 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserRepository;
 
+import java.awt.print.Book;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -65,7 +66,7 @@ public class ItemServiceImpl implements ItemService {
                     .findLastBookingByItemId(id, StateType.APPROVED)
                     .stream().findFirst();
 
-            ItemDto itemDto = ItemMapper.toItemWithBookingDto(item);
+            ItemDto itemDto = ItemMapper.toItemDto(item);
             nextBooking.ifPresent(booking ->
                     itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
             lastBooking.ifPresent(booking ->
@@ -91,26 +92,18 @@ public class ItemServiceImpl implements ItemService {
         List<Item> itemList = itemRepository.findByUserId(savedUser.getId());
         if (itemList.get(0).getUser().getId().equals(userId)) {
             List<ItemDto> res = new ArrayList<>();
-            for (Item i : itemList) {
-                List<Booking> nextBooking = bookingRepository
-                        .findNextBookingByItemId(i.getId(), StateType.APPROVED);
-                List<Booking> lastBooking = bookingRepository
-                        .findLastBookingByItemId(i.getId(), StateType.APPROVED);
+            for (Item item : itemList) {
+                Optional<Booking> nextBooking = bookingRepository
+                        .findNextBookingByItemId(item.getId(), StateType.APPROVED).stream().findFirst();
+                Optional<Booking> lastBooking = bookingRepository
+                        .findLastBookingByItemId(item.getId(), StateType.APPROVED).stream().findFirst();
 
-                ItemDto itemDto = ItemMapper.toItemWithBookingDto(i);
+                ItemDto itemDto = ItemMapper.toItemDto(item);
 
-                if (nextBooking.isEmpty()) {
-                    itemDto.setNextBooking(null);
-                } else {
-                    itemDto.setNextBooking(BookingMapper.toNextBookingDto(nextBooking.get(0)));
-                }
-                if (lastBooking.isEmpty()) {
-                    itemDto.setLastBooking(null);
-                } else {
-                    itemDto.setLastBooking(BookingMapper.toLastBookingDto(lastBooking.get(0)));
-                }
-//                nextBooking.ifPresent(booking -> itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
-//                lastBooking.ifPresent(booking -> itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
+                nextBooking.ifPresent(booking ->
+                        itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
+                lastBooking.ifPresent(booking ->
+                        itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
 
                 List<Comment> comments = commentRepository.findAllByItemId(itemDto.getId());
                 itemDto.setComments(CommentMapper.toCommentsDto(comments));
@@ -147,8 +140,12 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentDto addComment(Long userId, CommentDtoIn commentDtoIn, Long itemId) {
         Booking booking = bookingRepository
-                .findFirstByUserIdAndItemIdAndEndBeforeAndStateType(userId, itemId, LocalDateTime.now(), StateType.APPROVED)
-                .orElseThrow(() -> new NotAvailableException("Ошибка"));
+                .findFirstByUserIdAndItemIdAndEndBeforeAndStateType(
+                        userId,
+                        itemId,
+                        LocalDateTime.now(),
+                        StateType.APPROVED
+                ).orElseThrow(() -> new NotAvailableException("Ошибка"));
         Comment comment = CommentMapper.toComment(commentDtoIn, booking.getUser(), booking.getItem());
         commentRepository.save(comment);
         return CommentMapper.toCommentDto(comment);

@@ -9,7 +9,6 @@ import javax.persistence.*;
 @Entity
 @Table(name = "items")
 public class Item {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,9 +25,4 @@ public class Item {
 
     @Column(name = "available", nullable = false)
     private boolean available;
-
-//    @JoinColumn(name = "comment_id")
-//    private List<Comment> comments;
-
-
 }
