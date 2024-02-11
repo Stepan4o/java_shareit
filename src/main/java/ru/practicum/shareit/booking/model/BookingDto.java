@@ -3,7 +3,7 @@ package ru.practicum.shareit.booking.model;
 
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.item.model.ItemBookingDto;
+import ru.practicum.shareit.item.dto.ItemBookingDto;
 import ru.practicum.shareit.user.model.UserBookerDto;
 
 import javax.validation.constraints.FutureOrPresent;

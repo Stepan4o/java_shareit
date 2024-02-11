@@ -14,7 +14,7 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne//(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -26,4 +26,9 @@ public class Item {
 
     @Column(name = "available", nullable = false)
     private boolean available;
+
+//    @JoinColumn(name = "comment_id")
+//    private List<Comment> comments;
+
+
 }

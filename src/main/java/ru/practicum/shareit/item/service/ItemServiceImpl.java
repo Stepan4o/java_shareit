@@ -6,12 +6,19 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.exception.AccessDeniedException;
+import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.model.ItemDto;
-import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentDtoIn;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.mapper.CommentMapper;
+import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.repository.CommentRepository;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -28,6 +35,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Long userId) {
@@ -47,20 +55,43 @@ public class ItemServiceImpl implements ItemService {
                 () -> new NotFoundException(
                         String.format("Предмет с id:%d не найден", id)
                 ));
-        if (item.getUser().getId().equals(userId)) {
+        List<Comment> comments = commentRepository.findAllByItemId(id);
+        if (Objects.equals(item.getUser().getId(), (userId))) {
             Optional<Booking> nextBooking = bookingRepository
-                    .findFirstByItemUserIdAndStartAfterOrderByStartAsc(userId, LocalDateTime.now());
-            Optional<Booking> lastBooking = bookingRepository
-                    .findFirstByItemUserIdAndEndBeforeOrderByEndAsc(userId, LocalDateTime.now());
+                    .findNextBookingByItemId(
+                            id, LocalDateTime.now(), Status.APPROVED
+                    ).stream().findFirst();
 
+            Optional<Booking> lastBooking = bookingRepository
+                    .findLastBookingByItemId(
+                            id, LocalDateTime.now(), Status.APPROVED
+                    ).stream().findFirst();
+//            List<Booking> lastBooking = bookingRepository
+//                    .findLastBookingByItemId(
+//                            id, LocalDateTime.now(), Status.APPROVED
+//                    );
             ItemDto itemDto = ItemMapper.toItemWithBookingDto(item);
             nextBooking.ifPresent(booking -> itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
             lastBooking.ifPresent(booking -> itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
+//            if (nextBooking.isEmpty()) {
+//                itemDto.setNextBooking(null);
+//            } else {
+//                itemDto.setNextBooking(BookingMapper.toNextBookingDto(nextBooking.get(0)));
+//            }
+//            if (lastBooking.isEmpty()) {
+//                itemDto.setLastBooking(null);
+//            } else {
+//                itemDto.setLastBooking(BookingMapper.toLastBookingDto(lastBooking.get(0)));
+//            }
 
+            itemDto.setComments(CommentMapper.toCommentsDto(comments));
             return itemDto;
         } else {
             log.debug("userId:{} поиск вещи по itemId:{}", userId, item.getId());
-            return ItemMapper.toItemDto(item);
+
+            ItemDto itemDto = ItemMapper.toItemDto(item);
+            itemDto.setComments(CommentMapper.toCommentsDto(comments));
+            return itemDto;
         }
     }
 
@@ -74,20 +105,40 @@ public class ItemServiceImpl implements ItemService {
         if (itemList.get(0).getUser().getId().equals(userId)) {
             List<ItemDto> res = new ArrayList<>();
             for (Item i : itemList) {
-                Optional<Booking> nextBooking = bookingRepository
-                        .findFirstByItemIdAndStartAfterOrderByStartAsc(i.getId(), LocalDateTime.now());
-                Optional<Booking> lastBooking = bookingRepository
-                        .findFirstByItemIdAndEndBeforeOrderByEndAsc(i.getId(), LocalDateTime.now());
+                List<Booking> nextBooking = bookingRepository
+                        .findNextBookingByItemId(i.getId(), LocalDateTime.now(), Status.APPROVED);
+                List<Booking> lastBooking = bookingRepository
+                        .findLastBookingByItemId(i.getId(), LocalDateTime.now(), Status.APPROVED);
 
                 ItemDto itemDto = ItemMapper.toItemWithBookingDto(i);
 
-                nextBooking.ifPresent(booking -> itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
-                lastBooking.ifPresent(booking -> itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
+                if (nextBooking.isEmpty()) {
+                    itemDto.setNextBooking(null);
+                } else {
+                    itemDto.setNextBooking(BookingMapper.toNextBookingDto(nextBooking.get(0)));
+                }
+                if (lastBooking.isEmpty()) {
+                    itemDto.setLastBooking(null);
+                } else {
+                    itemDto.setLastBooking(BookingMapper.toLastBookingDto(lastBooking.get(0)));
+                }
+//                nextBooking.ifPresent(booking -> itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
+//                lastBooking.ifPresent(booking -> itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
+
+                List<Comment> comments = commentRepository.findAllByItemId(itemDto.getId());
+                itemDto.setComments(CommentMapper.toCommentsDto(comments));
+
                 res.add(itemDto);
             }
             return res;
         } else {
-            return ItemMapper.toItemsDto(itemList);
+            List<ItemDto> items = ItemMapper.toItemsDto(itemList);
+            for (ItemDto itemDto : items) {
+                List<Comment> comments = commentRepository.findAllByItemId(itemDto.getId());
+                itemDto.setComments(CommentMapper.toCommentsDto(comments));
+            }
+            return items;
+
         }
     }
 
@@ -104,6 +155,16 @@ public class ItemServiceImpl implements ItemService {
             log.debug("userId:{} поиск вещи по строке text:{}", userId, searchText);
             return ItemMapper.toItemsDto(itemList);
         }
+    }
+
+    @Override
+    public CommentDto addComment(Long userId, CommentDtoIn commentDtoIn, Long itemId) {
+        Booking booking = bookingRepository
+                .findFirstByUserIdAndItemIdAndEndBeforeAndStatus(userId, itemId, LocalDateTime.now(), Status.APPROVED)
+                .orElseThrow(() -> new NotAvailableException("Ошибка"));
+        Comment comment = CommentMapper.toComment(commentDtoIn, booking.getUser(), booking.getItem());
+        commentRepository.save(comment);
+        return CommentMapper.toCommentDto(comment);
     }
 
     @Override

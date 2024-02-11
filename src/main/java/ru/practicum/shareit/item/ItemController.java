@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.model.ItemDto;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentDtoIn;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -61,7 +63,7 @@ public class ItemController {
     ) {
 
         log.debug("GET: /items/search?searchText={}", text);
-            return itemService.getItemsBySubstring(text, userId);
+        return itemService.getItemsBySubstring(text, userId);
     }
 
     @GetMapping
@@ -70,5 +72,15 @@ public class ItemController {
     ) {
         log.debug("GET: /items ownerId:{}", userId);
         return itemService.getAllItemsByUserId(userId);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(
+            @RequestHeader(HEADER_USER_ID) Long userId,
+            @Valid @RequestBody CommentDtoIn commentDtoIn,
+            @PathVariable Long itemId
+    ) {
+    return itemService.addComment(userId, commentDtoIn, itemId);
+
     }
 }

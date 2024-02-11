@@ -1,8 +1,8 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.mapper;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.shareit.item.model.ItemBookingDto;
-import ru.practicum.shareit.item.model.ItemDto;
+import ru.practicum.shareit.item.dto.ItemBookingDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.ArrayList;
@@ -17,6 +17,7 @@ public class ItemMapper {
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.isAvailable())
+                .comments(List.of())
                 .build();
     }
     public ItemDto toItemWithBookingDto(Item item) {
@@ -27,6 +28,7 @@ public class ItemMapper {
                 .available(item.isAvailable())
                 .nextBooking(null)
                 .lastBooking(null)
+                .comments(List.of())
                 .build();
     }
 

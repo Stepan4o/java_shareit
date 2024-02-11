@@ -11,7 +11,7 @@ import ru.practicum.shareit.booking.model.BookingValidationDto;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
@@ -23,7 +23,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
-    private final LocalDateTime NOW = LocalDateTime.now();
+//    private final LocalDateTime NOW = LocalDateTime.now();
 
     private final BookingRepository repository;
     private final ItemRepository itemRepository;
@@ -106,36 +106,25 @@ public class BookingServiceImpl implements BookingService {
             case "ALL":
                 res = repository.findAllByUserIdOrderByStartDesc(userId);
                 break;
-
             case "FUTURE":
-                res = repository.findAllByUserIdAndStartIsAfterOrderByStartDesc(
-                        userId, NOW
-                );
+                res = repository.findAllFutureByUserId(userId, LocalDateTime.now());
                 break;
-
             case "CURRENT":
-                res = repository.findAllByUserIdAndStartIsAfterAndEndIsBefore(
-                        userId, NOW, NOW
-                );
+                res = repository.findAllCurrentByUserId(userId, LocalDateTime.now());
                 break;
-
             case "PAST":
-                res = repository.findAllByUserIdAndEndIsAfter(userId, NOW);
+                res = repository.findAllPastByUserId(userId, LocalDateTime.now());
                 break;
-
             case "WAITING":
                 res = repository.findAllByUserIdAndStatus(userId, Status.WAITING);
                 break;
-
             case "REJECTED":
                 res = repository.findAllByUserIdAndStatus(userId, Status.REJECTED);
                 break;
-
             default:
                 throw new NotAvailableException(String.format(
                         "Unknown state: %s", state
                 ));
-
         }
         return BookingMapper.toBookingsDto(res);
     }
@@ -150,23 +139,19 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> res;
         switch (state) {
             case "ALL":
-                res = repository.
-                        findAllByItemUserIdOrderByStartDesc(userId);
+                res = repository.findAllByItemUserIdOrderByStartDesc(userId);
                 break;
 
             case "FUTURE":
-                res = repository.
-                        findAllByItemUserIdAndStartIsAfterOrderByStartDesc(userId, NOW);
+                res = repository.findAllFutureByOwnerId(userId, LocalDateTime.now());
                 break;
 
             case "CURRENT":
-                res = repository.
-                        findAllByItemUserIdAndStartIsAfterAndEndIsBefore(userId, NOW, NOW);
+                res = repository.findAllCurrentByOwnerId(userId, LocalDateTime.now());
                 break;
 
             case "PAST":
-                res = repository
-                        .findAllByItemUserIdAndEndIsAfter(userId, NOW);
+                res = repository.findAllPastByOwnerId(userId, LocalDateTime.now());
                 break;
 
             case "WAITING":

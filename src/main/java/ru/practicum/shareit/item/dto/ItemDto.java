@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.item.dto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +9,9 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -25,5 +28,6 @@ public class ItemDto {
     private LastBookingDto lastBooking;
     @Transient
     private NextBookingDto nextBooking;
+    private List<CommentDto> comments;
 
 }

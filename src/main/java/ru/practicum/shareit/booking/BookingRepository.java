@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 
@@ -12,37 +13,70 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByUserIdOrderByStartDesc(Long userId);
 
-    List<Booking> findAllByUserIdAndStartIsAfterOrderByStartDesc(
+    @Query("SELECT b FROM Booking AS b " +
+            "WHERE b.user.id = ?1 " +
+            "AND b.start > ?2 " +
+            "ORDER BY b.start DESC ")
+    List<Booking> findAllFutureByUserId(
             Long userId,
-            LocalDateTime start
+            LocalDateTime now
     );
 
-    List<Booking> findAllByUserIdAndStartIsAfterAndEndIsBefore(
+    @Query("SELECT b FROM Booking AS b " +
+            "WHERE b.user.id = ?1 " +
+            "AND   ?2 BETWEEN b.start AND b.end " +
+            "ORDER BY b.start DESC ")
+    List<Booking> findAllCurrentByUserId(
             Long userId,
-            LocalDateTime start,
-            LocalDateTime end
+            LocalDateTime now
     );
 
-    List<Booking> findAllByUserIdAndEndIsAfter(Long userId, LocalDateTime end);
+    @Query("SELECT b FROM Booking AS b " +
+            "WHERE b.user.id = ?1 " +
+            "AND b.end < ?2 " +
+            "ORDER BY b.end DESC ")
+    List<Booking> findAllPastByUserId(Long userId, LocalDateTime now);
 
     List<Booking> findAllByUserIdAndStatus(Long userId, Status status);
-    //where bookingStateContaining waiting
+
     List<Booking> findAllByItemUserIdOrderByStartDesc(Long userId);
 
-    List<Booking> findAllByItemUserIdAndStartIsAfterOrderByStartDesc(Long userId, LocalDateTime start);
+    @Query("SELECT b FROM Booking AS b " +
+            "WHERE b.item.user.id = ?1 " +
+            "AND b.start > ?2 " +
+            "ORDER BY b.start DESC ")
+    List<Booking> findAllFutureByOwnerId(Long userId, LocalDateTime start);
 
-    List<Booking> findAllByItemUserIdAndStartIsAfterAndEndIsBefore(
+    @Query("SELECT b FROM Booking AS b " +
+            "WHERE b.item.user.id = ?1 " +
+            "AND ?2 BETWEEN b.start AND b.end " +
+            "ORDER BY b.start DESC ")
+    List<Booking> findAllCurrentByOwnerId(
             Long userId,
-            LocalDateTime start,
-            LocalDateTime end
+            LocalDateTime now
     );
 
-    List<Booking> findAllByItemUserIdAndEndIsAfter(Long userId, LocalDateTime end);
+    @Query("SELECT b FROM Booking AS b " +
+            "WHERE b.item.user.id = ?1 " +
+            "AND b.end < ?2 " +
+            "ORDER BY b.start DESC ")
+    List<Booking> findAllPastByOwnerId(Long userId, LocalDateTime now);
 
     List<Booking> findAllByItemUserIdAndStatus(Long userId, Status status);
 
-    Optional<Booking> findFirstByItemUserIdAndStartAfterOrderByStartAsc(Long userId, LocalDateTime start);
-    Optional<Booking> findFirstByItemUserIdAndEndBeforeOrderByEndAsc(Long userId, LocalDateTime end);
-    Optional<Booking> findFirstByItemIdAndEndBeforeOrderByEndAsc(Long itemId, LocalDateTime end);
-    Optional<Booking> findFirstByItemIdAndStartAfterOrderByStartAsc(Long itemId, LocalDateTime start);
+    @Query("SELECT b FROM Booking AS b " +
+            "WHERE b.item.id = ?1 " +
+            "AND b.start < ?2 " +
+            "AND b.status = ?3 " +
+            "ORDER BY b.start DESC ")
+    List<Booking> findLastBookingByItemId(Long itemId, LocalDateTime now, Status status);
+
+    @Query("SELECT b FROM Booking AS b " +
+            "WHERE b.item.id = ?1 " +
+            "AND b.start > ?2 " +
+            "AND b.status = ?3 " +
+            "ORDER BY b.start ASC ")
+    List<Booking> findNextBookingByItemId(Long itemId, LocalDateTime now, Status status);
+
+    Optional<Booking> findFirstByUserIdAndItemIdAndEndBeforeAndStatus(Long userId, Long itemId, LocalDateTime end, Status status);
 }

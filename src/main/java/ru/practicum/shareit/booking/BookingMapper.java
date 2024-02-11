@@ -3,7 +3,7 @@ package ru.practicum.shareit.booking;
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.model.*;
 import ru.practicum.shareit.exception.NotAvailableException;
-import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.user.UserMapper;
 
 import java.time.LocalDateTime;
