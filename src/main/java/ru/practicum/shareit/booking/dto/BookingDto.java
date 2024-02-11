@@ -1,8 +1,9 @@
-package ru.practicum.shareit.booking.model;
+package ru.practicum.shareit.booking.dto;
 
 
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.shareit.booking.model.StateType;
 import ru.practicum.shareit.item.dto.ItemBookingDto;
 import ru.practicum.shareit.user.model.UserBookerDto;
 
@@ -27,5 +28,5 @@ public class BookingDto {
     @FutureOrPresent(message = "Некорректно указана дата")
     private LocalDateTime end;
 
-    private Status status;
+    private StateType status;
 }

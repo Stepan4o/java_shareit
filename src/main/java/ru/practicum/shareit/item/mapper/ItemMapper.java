@@ -55,14 +55,4 @@ public class ItemMapper {
                 .name(item.getName())
                 .build();
     }
-
-//    public ItemWithLastBookingDto toItemWithLastBookingDto(Item item) {
-//        return ItemWithLastBookingDto.builder()
-//                .id(item.getId())
-//                .name(item.getName())
-//                .description(item.getDescription())
-//                .lastBooking(null)
-//                .nextBooking(null)
-//                .build();
-//    }
 }

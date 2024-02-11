@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.BookingDto;
-import ru.practicum.shareit.booking.model.BookingValidationDto;
-import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingDtoIn;
+import ru.practicum.shareit.booking.model.StateType;
 import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -17,6 +17,7 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,10 +32,10 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
 
-    public BookingDto add(BookingValidationDto bookingValidationDto, Long userId) {
-        Item item = itemRepository.findById(bookingValidationDto.getItemId()).orElseThrow(
+    public BookingDto add(BookingDtoIn bookingDtoIn, Long userId) {
+        Item item = itemRepository.findById(bookingDtoIn.getItemId()).orElseThrow(
                 () -> new NotFoundException(String.format(
-                        "Вещь с id:%d не найдена", bookingValidationDto.getItemId()
+                        "Вещь с id:%d не найдена", bookingDtoIn.getItemId()
                 )));
         if (item.isAvailable()) {
             if (!Objects.equals(item.getUser().getId(), userId)) {
@@ -42,7 +43,7 @@ public class BookingServiceImpl implements BookingService {
                         () -> new NotFoundException(String.format(
                                 "Пользователь с id:%d не найден", userId
                         )));
-                Booking booking = BookingMapper.toBooking(bookingValidationDto);
+                Booking booking = BookingMapper.toBooking(bookingDtoIn);
                 booking.setItem(item);
                 booking.setUser(booker);
                 repository.save(booking);
@@ -63,11 +64,11 @@ public class BookingServiceImpl implements BookingService {
                 ));
         if (Objects.equals(booking.getItem().getUser().getId(), userId)) {
 
-            if (booking.getStatus().equals(Status.WAITING)) {
+            if (booking.getStateType().equals(StateType.WAITING)) {
                 if (bool) {
-                    booking.setStatus(Status.APPROVED);
+                    booking.setStateType(StateType.APPROVED);
                 } else {
-                    booking.setStatus(Status.REJECTED);
+                    booking.setStateType(StateType.REJECTED);
                 }
             } else {
                 throw new NotAvailableException("Бронирование не в статус WAITING");
@@ -101,32 +102,36 @@ public class BookingServiceImpl implements BookingService {
                     "Пользователь id:%d не найден", userId
             ));
         }
-        List<Booking> res;
-        switch (state) {
-            case "ALL":
-                res = repository.findAllByUserIdOrderByStartDesc(userId);
-                break;
-            case "FUTURE":
-                res = repository.findAllFutureByUserId(userId, LocalDateTime.now());
-                break;
-            case "CURRENT":
-                res = repository.findAllCurrentByUserId(userId, LocalDateTime.now());
-                break;
-            case "PAST":
-                res = repository.findAllPastByUserId(userId, LocalDateTime.now());
-                break;
-            case "WAITING":
-                res = repository.findAllByUserIdAndStatus(userId, Status.WAITING);
-                break;
-            case "REJECTED":
-                res = repository.findAllByUserIdAndStatus(userId, Status.REJECTED);
-                break;
-            default:
-                throw new NotAvailableException(String.format(
-                        "Unknown state: %s", state
-                ));
+        List<Booking> bookings = new ArrayList<>();
+        StateType type;
+        try {
+            type = StateType.valueOf(state);
+        } catch (IllegalArgumentException exception) {
+            throw new NotAvailableException(String.format(
+                    "Unknown state: %s", state
+            ));
         }
-        return BookingMapper.toBookingsDto(res);
+        switch (type) {
+            case ALL:
+                bookings = repository.findAllByUserIdOrderByStartDesc(userId);
+                break;
+            case FUTURE:
+                bookings = repository.findAllFutureByUserId(userId);
+                break;
+            case CURRENT:
+                bookings = repository.findAllCurrentByUserId(userId);
+                break;
+            case PAST:
+                bookings = repository.findAllPastByUserId(userId);
+                break;
+            case WAITING:
+                bookings = repository.findAllByUserIdAndStateType(userId, StateType.WAITING);
+                break;
+            case REJECTED:
+                bookings = repository.findAllByUserIdAndStateType(userId, StateType.REJECTED);
+                break;
+        }
+        return BookingMapper.toBookingsDto(bookings);
     }
 
     @Override
@@ -136,41 +141,38 @@ public class BookingServiceImpl implements BookingService {
                     "Пользователь id:%d не найден", userId)
             );
         }
-        List<Booking> res;
-        switch (state) {
-            case "ALL":
-                res = repository.findAllByItemUserIdOrderByStartDesc(userId);
-                break;
-
-            case "FUTURE":
-                res = repository.findAllFutureByOwnerId(userId, LocalDateTime.now());
-                break;
-
-            case "CURRENT":
-                res = repository.findAllCurrentByOwnerId(userId, LocalDateTime.now());
-                break;
-
-            case "PAST":
-                res = repository.findAllPastByOwnerId(userId, LocalDateTime.now());
-                break;
-
-            case "WAITING":
-                res = repository.
-                        findAllByItemUserIdAndStatus(userId, Status.WAITING);
-                break;
-
-            case "REJECTED":
-                res = repository
-                        .findAllByItemUserIdAndStatus(userId, Status.REJECTED);
-                break;
-
-            default:
-                throw new NotAvailableException(String.format(
-                        "Unknown state: %s", state
-                ));
-
+        List<Booking> bookings = new ArrayList<>();
+        StateType type;
+        try {
+            type = StateType.valueOf(state);
+        } catch (IllegalArgumentException exception) {
+            throw new NotAvailableException(String.format(
+                    "Unknown state: %s", state
+            ));
         }
-        return BookingMapper.toBookingsDto(res);
+        switch (type) {
+            case ALL:
+                bookings = repository.findAllByItemUserIdOrderByStartDesc(userId);
+                break;
+            case FUTURE:
+                bookings = repository.findAllFutureByOwnerId(userId);
+                break;
+            case CURRENT:
+                bookings = repository.findAllCurrentByOwnerId(userId);
+                break;
+            case PAST:
+                bookings = repository.findAllPastByOwnerId(userId);
+                break;
+            case WAITING:
+                bookings = repository.
+                        findAllByItemUserIdAndStateType(userId, StateType.WAITING);
+                break;
+            case REJECTED:
+                bookings = repository
+                        .findAllByItemUserIdAndStateType(userId, StateType.REJECTED);
+                break;
+        }
+        return BookingMapper.toBookingsDto(bookings);
     }
 
 }

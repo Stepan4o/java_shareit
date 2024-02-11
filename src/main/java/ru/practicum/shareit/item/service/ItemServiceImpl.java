@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.booking.model.StateType;
 import ru.practicum.shareit.exception.AccessDeniedException;
 import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -58,31 +58,18 @@ public class ItemServiceImpl implements ItemService {
         List<Comment> comments = commentRepository.findAllByItemId(id);
         if (Objects.equals(item.getUser().getId(), (userId))) {
             Optional<Booking> nextBooking = bookingRepository
-                    .findNextBookingByItemId(
-                            id, LocalDateTime.now(), Status.APPROVED
-                    ).stream().findFirst();
+                    .findNextBookingByItemId(id, StateType.APPROVED)
+                    .stream().findFirst();
 
             Optional<Booking> lastBooking = bookingRepository
-                    .findLastBookingByItemId(
-                            id, LocalDateTime.now(), Status.APPROVED
-                    ).stream().findFirst();
-//            List<Booking> lastBooking = bookingRepository
-//                    .findLastBookingByItemId(
-//                            id, LocalDateTime.now(), Status.APPROVED
-//                    );
+                    .findLastBookingByItemId(id, StateType.APPROVED)
+                    .stream().findFirst();
+
             ItemDto itemDto = ItemMapper.toItemWithBookingDto(item);
-            nextBooking.ifPresent(booking -> itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
-            lastBooking.ifPresent(booking -> itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
-//            if (nextBooking.isEmpty()) {
-//                itemDto.setNextBooking(null);
-//            } else {
-//                itemDto.setNextBooking(BookingMapper.toNextBookingDto(nextBooking.get(0)));
-//            }
-//            if (lastBooking.isEmpty()) {
-//                itemDto.setLastBooking(null);
-//            } else {
-//                itemDto.setLastBooking(BookingMapper.toLastBookingDto(lastBooking.get(0)));
-//            }
+            nextBooking.ifPresent(booking ->
+                    itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
+            lastBooking.ifPresent(booking ->
+                    itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
 
             itemDto.setComments(CommentMapper.toCommentsDto(comments));
             return itemDto;
@@ -106,9 +93,9 @@ public class ItemServiceImpl implements ItemService {
             List<ItemDto> res = new ArrayList<>();
             for (Item i : itemList) {
                 List<Booking> nextBooking = bookingRepository
-                        .findNextBookingByItemId(i.getId(), LocalDateTime.now(), Status.APPROVED);
+                        .findNextBookingByItemId(i.getId(), StateType.APPROVED);
                 List<Booking> lastBooking = bookingRepository
-                        .findLastBookingByItemId(i.getId(), LocalDateTime.now(), Status.APPROVED);
+                        .findLastBookingByItemId(i.getId(), StateType.APPROVED);
 
                 ItemDto itemDto = ItemMapper.toItemWithBookingDto(i);
 
@@ -160,7 +147,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentDto addComment(Long userId, CommentDtoIn commentDtoIn, Long itemId) {
         Booking booking = bookingRepository
-                .findFirstByUserIdAndItemIdAndEndBeforeAndStatus(userId, itemId, LocalDateTime.now(), Status.APPROVED)
+                .findFirstByUserIdAndItemIdAndEndBeforeAndStateType(userId, itemId, LocalDateTime.now(), StateType.APPROVED)
                 .orElseThrow(() -> new NotAvailableException("Ошибка"));
         Comment comment = CommentMapper.toComment(commentDtoIn, booking.getUser(), booking.getItem());
         commentRepository.save(comment);

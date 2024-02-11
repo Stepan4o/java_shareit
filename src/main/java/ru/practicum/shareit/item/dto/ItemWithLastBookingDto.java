@@ -2,8 +2,8 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.booking.model.LastBookingDto;
-import ru.practicum.shareit.booking.model.NextBookingDto;
+import ru.practicum.shareit.booking.dto.LastBookingDto;
+import ru.practicum.shareit.booking.dto.NextBookingDto;
 
 @Data
 @Builder

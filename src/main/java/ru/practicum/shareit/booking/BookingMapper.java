@@ -1,7 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.shareit.booking.model.*;
+import ru.practicum.shareit.booking.dto.*;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.user.UserMapper;
@@ -12,8 +13,6 @@ import java.util.List;
 
 @UtilityClass
 public class BookingMapper {
-
-    // TODO что то упустил
 
     public Booking toBooking(BookingDto bookingDto) {
 
@@ -47,7 +46,7 @@ public class BookingMapper {
                 .booker(UserMapper.toBookerDto(booking.getUser()))
                 .start(booking.getStart())
                 .end(booking.getEnd())
-                .status(booking.getStatus())
+                .status(booking.getStateType())
                 .build();
     }
 
@@ -59,10 +58,10 @@ public class BookingMapper {
         return res;
     }
 
-    public Booking toBooking(BookingValidationDto bookingValidationDto) {
+    public Booking toBooking(BookingDtoIn bookingDtoIn) {
 
-        LocalDateTime start = bookingValidationDto.getStart();
-        LocalDateTime end = bookingValidationDto.getEnd();
+        LocalDateTime start = bookingDtoIn.getStart();
+        LocalDateTime end = bookingDtoIn.getEnd();
         checkDateTime(start,end);
 
         Booking booking = new Booking();

@@ -37,5 +37,5 @@ public class Booking {
 
     @Column(name = "status",nullable = false, columnDefinition = "varchar(50) default 'WAITING'")
     @Enumerated(EnumType.STRING)
-    private Status status = Status.WAITING;
+    private StateType stateType = StateType.WAITING;
 }
