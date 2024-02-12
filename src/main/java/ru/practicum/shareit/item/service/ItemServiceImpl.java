@@ -54,70 +54,39 @@ public class ItemServiceImpl implements ItemService {
                 () -> new NotFoundException(
                         String.format("Предмет с id:%d не найден", id)
                 ));
-        List<Comment> comments = commentRepository.findAllByItemId(id);
+        ItemDto itemDto = ItemMapper.toItemDto(item);
+        setComments(itemDto);
+
         if (Objects.equals(item.getUser().getId(), (userId))) {
-            Optional<Booking> nextBooking = bookingRepository
-                    .findNextBookingByItemId(id, StateType.APPROVED)
-                    .stream().findFirst();
-
-            Optional<Booking> lastBooking = bookingRepository
-                    .findLastBookingByItemId(id, StateType.APPROVED)
-                    .stream().findFirst();
-
-            ItemDto itemDto = ItemMapper.toItemDto(item);
-            nextBooking.ifPresent(booking ->
-                    itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
-            lastBooking.ifPresent(booking ->
-                    itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
-
-            itemDto.setComments(CommentMapper.toCommentsDto(comments));
-            return itemDto;
-        } else {
-            log.debug("userId:{} поиск вещи по itemId:{}", userId, item.getId());
-
-            ItemDto itemDto = ItemMapper.toItemDto(item);
-            itemDto.setComments(CommentMapper.toCommentsDto(comments));
-            return itemDto;
+            // Бронирования только в случае запроса владельцем
+            setNextAndLastBooking(itemDto);
         }
+        log.debug("userId:{} поиск вещи по itemId:{}", userId, item.getId());
+        return itemDto;
     }
 
+    /**
+     * В методе получаю список всех предметов пользоваетля,
+     * проверяю первый найденный item и id его владельца
+     * если запрашивает владелец, отдаю с комментами и бронированиями
+     * в противном случае - только с комментами
+     */
     @Override
     public List<ItemDto> getAllItemsByUserId(Long userId) {
         User savedUser = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException(
                         String.format("Пользователь с id:%d не найден", userId)
                 ));
+
         List<Item> itemList = itemRepository.findByUserId(savedUser.getId());
-        if (itemList.get(0).getUser().getId().equals(userId)) {
-            List<ItemDto> res = new ArrayList<>();
-            for (Item item : itemList) {
-                Optional<Booking> nextBooking = bookingRepository
-                        .findNextBookingByItemId(item.getId(), StateType.APPROVED).stream().findFirst();
-                Optional<Booking> lastBooking = bookingRepository
-                        .findLastBookingByItemId(item.getId(), StateType.APPROVED).stream().findFirst();
+        Optional<Item> item = itemList.stream().findFirst();
+        List<ItemDto> itemsDto = ItemMapper.toItemsDto(itemList);
+        itemsDto.forEach(this::setComments);
 
-                ItemDto itemDto = ItemMapper.toItemDto(item);
-
-                nextBooking.ifPresent(booking ->
-                        itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
-                lastBooking.ifPresent(booking ->
-                        itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
-
-                List<Comment> comments = commentRepository.findAllByItemId(itemDto.getId());
-                itemDto.setComments(CommentMapper.toCommentsDto(comments));
-
-                res.add(itemDto);
-            }
-            return res;
-        } else {
-            List<ItemDto> items = ItemMapper.toItemsDto(itemList);
-            for (ItemDto itemDto : items) {
-                List<Comment> comments = commentRepository.findAllByItemId(itemDto.getId());
-                itemDto.setComments(CommentMapper.toCommentsDto(comments));
-            }
-            return items;
-
+        if (item.isPresent() && Objects.equals(item.get().getUser().getId(), userId)) {
+            itemsDto.forEach(this::setNextAndLastBooking);
         }
+        return itemsDto;
     }
 
     @Override
@@ -195,5 +164,25 @@ public class ItemServiceImpl implements ItemService {
             }
         });
         return item;
+    }
+
+    private void setNextAndLastBooking(ItemDto itemDto) {
+        Optional<Booking> nextBooking = bookingRepository
+                .findNextBookingByItemId(itemDto.getId(), StateType.APPROVED)
+                .stream().findFirst();
+
+        Optional<Booking> lastBooking = bookingRepository
+                .findLastBookingByItemId(itemDto.getId(), StateType.APPROVED)
+                .stream().findFirst();
+        nextBooking.ifPresent(booking ->
+                itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
+        lastBooking.ifPresent(booking ->
+                itemDto.setLastBooking(BookingMapper.toLastBookingDto(booking)));
+    }
+
+    private void setComments(ItemDto itemDto) {
+        List<Comment> comments = commentRepository.findAllByItemId(itemDto.getId());
+        List<CommentDto> commentsDtoList = CommentMapper.toCommentsDto(comments);
+        itemDto.setComments(commentsDtoList);
     }
 }
