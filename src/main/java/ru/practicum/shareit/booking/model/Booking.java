@@ -9,7 +9,6 @@ import ru.practicum.shareit.user.model.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-
 @Data
 @Entity
 @Table(name = "bookings")
@@ -35,7 +34,7 @@ public class Booking {
     @Column(name = "end_of", nullable = false)
     private LocalDateTime end;
 
-    @Column(name = "status",nullable = false, columnDefinition = "varchar(50) default 'WAITING'")
+    @Column(name = "status", nullable = false, columnDefinition = "varchar(50) default 'WAITING'")
     @Enumerated(EnumType.STRING)
     private StateType stateType = StateType.WAITING;
 }

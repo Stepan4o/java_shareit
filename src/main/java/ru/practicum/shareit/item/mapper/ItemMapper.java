@@ -20,17 +20,6 @@ public class ItemMapper {
                 .comments(List.of())
                 .build();
     }
-    public ItemDto toItemWithBookingDto(Item item) {
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.isAvailable())
-                .nextBooking(null)
-                .lastBooking(null)
-                .comments(List.of())
-                .build();
-    }
 
     public List<ItemDto> toItemsDto(List<Item> items) {
         List<ItemDto> res = new ArrayList<>();

@@ -9,5 +9,4 @@ public class NotAvailableException extends RuntimeException {
     public NotAvailableException(String message) {
         this.message = message;
     }
-
 }

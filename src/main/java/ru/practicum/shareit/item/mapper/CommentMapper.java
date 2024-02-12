@@ -12,7 +12,7 @@ import java.util.List;
 
 @UtilityClass
 public class CommentMapper {
-    public Comment toComment (CommentDtoIn commentDtoIn, User user, Item item) {
+    public Comment toComment(CommentDtoIn commentDtoIn, User user, Item item) {
         Comment comment = new Comment();
         comment.setText(commentDtoIn.getText());
         comment.setCreated(commentDtoIn.getCreate());

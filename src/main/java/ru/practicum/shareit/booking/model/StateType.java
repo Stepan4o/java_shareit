@@ -7,9 +7,5 @@ public enum StateType {
     ALL,
     FUTURE,
     CURRENT,
-    PAST,
-
-
-
-
+    PAST
 }

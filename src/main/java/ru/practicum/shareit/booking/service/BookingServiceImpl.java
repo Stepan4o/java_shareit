@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.service;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -16,7 +15,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,7 +22,6 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
-//    private final LocalDateTime NOW = LocalDateTime.now();
 
     private final BookingRepository repository;
     private final ItemRepository itemRepository;

@@ -44,13 +44,12 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse hanldeSqlException (
+    public ErrorResponse hanldeSqlException(
             final DataIntegrityViolationException exception
     ) {
-        String bigMessage = Objects.requireNonNull(exception.getMessage());
-//        String[] tokens = bigMessage.split(":");
-        log.error(bigMessage);
-        return new ErrorResponse(bigMessage);
+        String message = Objects.requireNonNull(exception.getMessage());
+        log.error(message);
+        return new ErrorResponse("Некорректно указана информация");
     }
 
     @ExceptionHandler
@@ -76,7 +75,7 @@ public class ErrorHandler {
     public ErrorResponse handleMissingRequestHeaderException(
             final MissingRequestHeaderException exception
     ) {
-        log.error("Некорректное значение UserId");
+        log.error(exception.getMessage());
         return new ErrorResponse("Некорректное значение UserId");
     }
 

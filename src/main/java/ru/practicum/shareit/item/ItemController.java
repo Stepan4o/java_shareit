@@ -80,7 +80,6 @@ public class ItemController {
             @Valid @RequestBody CommentDtoIn commentDtoIn,
             @PathVariable Long itemId
     ) {
-    return itemService.addComment(userId, commentDtoIn, itemId);
-
+        return itemService.addComment(userId, commentDtoIn, itemId);
     }
 }

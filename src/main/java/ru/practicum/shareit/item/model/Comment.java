@@ -6,7 +6,6 @@ import ru.practicum.shareit.user.model.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-
 @Data
 @Entity
 @Table(name = "comments")
@@ -28,5 +27,4 @@ public class Comment {
 
     @Column(nullable = false)
     private LocalDateTime created;
-
 }

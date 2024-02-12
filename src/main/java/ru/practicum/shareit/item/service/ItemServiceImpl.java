@@ -22,11 +22,9 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import java.awt.print.Book;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
-
 
 @Slf4j
 @Service
