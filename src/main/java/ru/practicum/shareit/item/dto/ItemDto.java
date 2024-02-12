@@ -24,5 +24,4 @@ public class ItemDto {
     private LastBookingDto lastBooking;
     private NextBookingDto nextBooking;
     private List<CommentDto> comments;
-
 }

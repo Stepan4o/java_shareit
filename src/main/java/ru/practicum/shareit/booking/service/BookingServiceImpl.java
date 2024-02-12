@@ -161,8 +161,8 @@ public class BookingServiceImpl implements BookingService {
                 bookings = repository.findAllPastByOwnerId(userId);
                 break;
             case WAITING:
-                bookings = repository.
-                        findAllByItemUserIdAndStateType(userId, StateType.WAITING);
+                bookings = repository
+                        .findAllByItemUserIdAndStateType(userId, StateType.WAITING);
                 break;
             case REJECTED:
                 bookings = repository

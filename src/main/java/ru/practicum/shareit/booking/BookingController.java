@@ -20,30 +20,38 @@ public class BookingController {
     private final BookingService service;
 
     @PostMapping
-    public BookingDto add(@RequestHeader(HEADER_USER_ID) Long userId,
-                          @Valid
-                          @RequestBody BookingDtoIn bookingDtoIn) {
+    public BookingDto add(
+            @RequestHeader(HEADER_USER_ID) Long userId,
+            @Valid @RequestBody BookingDtoIn bookingDtoIn
+    ) {
 
         return service.add(bookingDtoIn, userId);
     }
 
     @PatchMapping("/{bookingId}")
-    public BookingDto patchUpdate(@RequestHeader(HEADER_USER_ID) Long userId,
-                                  @PathVariable Long bookingId,
-                                  @RequestParam(value = "approved") boolean bool) {
+    public BookingDto patchUpdate(
+            @RequestHeader(HEADER_USER_ID) Long userId,
+            @PathVariable Long bookingId,
+            @RequestParam(value = "approved") boolean bool
+    ) {
+
         return service.patchUpdate(userId, bookingId, bool);
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto getById(@PathVariable Long bookingId,
-                              @RequestHeader(HEADER_USER_ID) Long userId) {
+    public BookingDto getById(
+            @PathVariable Long bookingId,
+            @RequestHeader(HEADER_USER_ID) Long userId
+    ) {
+
         return service.getById(bookingId, userId);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getAllByOwner(
             @RequestParam(required = false, defaultValue = "ALL") String state,
-            @RequestHeader("X-Sharer-User-Id") Long userId) {
+            @RequestHeader("X-Sharer-User-Id") Long userId
+    ) {
 
         return service.getAllByOwnerId(userId, state);
     }
@@ -51,7 +59,8 @@ public class BookingController {
     @GetMapping
     public List<BookingDto> gelAllByUserId(
             @RequestParam(required = false, defaultValue = "ALL") String state,
-            @RequestHeader("X-Sharer-User-Id") Long userId) {
+            @RequestHeader("X-Sharer-User-Id") Long userId
+    ) {
 
         return service.getAllByUserId(userId, state);
     }

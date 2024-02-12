@@ -70,6 +70,7 @@ public class ItemController {
     public List<ItemDto> getAllItemsByUserId(
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
+
         log.debug("GET: /items ownerId:{}", userId);
         return itemService.getAllItemsByUserId(userId);
     }
@@ -80,6 +81,7 @@ public class ItemController {
             @Valid @RequestBody CommentDtoIn commentDtoIn,
             @PathVariable Long itemId
     ) {
+
         return itemService.addComment(userId, commentDtoIn, itemId);
     }
 }
