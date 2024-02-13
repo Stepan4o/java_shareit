@@ -31,7 +31,7 @@ public class ItemController {
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
-        log.debug("POST: /items ownerId:{}", userId);
+        log.debug("POST: /items | userId: {}", userId);
         return itemService.createItem(itemDto, userId);
     }
 
@@ -42,7 +42,7 @@ public class ItemController {
             @PathVariable Long id
     ) {
 
-        log.debug("PATCH: /items/{} ownerId:{}", id, userId);
+        log.debug("PATCH: /items/{} | userId: {}", id, userId);
         return itemService.patchUpdateItem(itemDto, id, userId);
     }
 
@@ -52,7 +52,7 @@ public class ItemController {
             @PathVariable Long id
     ) {
 
-        log.debug("GET: /items/{}", id);
+        log.debug("GET: /items/{} | userId: {}", id, userId);
         return itemService.getItemById(id, userId);
     }
 
@@ -62,7 +62,7 @@ public class ItemController {
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
-        log.debug("GET: /items/search?searchText={}", text);
+        log.debug("GET: /items/search?searchText={} | userId: {}", text, userId);
         return itemService.getItemsBySubstring(text, userId);
     }
 
@@ -71,7 +71,7 @@ public class ItemController {
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
-        log.debug("GET: /items ownerId:{}", userId);
+        log.debug("GET: /items | userId:{}", userId);
         return itemService.getAllItemsByUserId(userId);
     }
 
@@ -81,7 +81,7 @@ public class ItemController {
             @Valid @RequestBody CommentDtoIn commentDtoIn,
             @PathVariable Long itemId
     ) {
-
+        log.debug("POST: /items/{}/comment | userId: {}", itemId, userId);
         return itemService.addComment(userId, commentDtoIn, itemId);
     }
 }

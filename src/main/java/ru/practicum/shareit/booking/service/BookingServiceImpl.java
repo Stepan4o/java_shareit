@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
@@ -28,7 +29,6 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
 
     @Override
-
     public BookingDto add(BookingDtoIn bookingDtoIn, Long userId) {
         Item item = itemRepository.findById(bookingDtoIn.getItemId()).orElseThrow(
                 () -> new NotFoundException(String.format(
@@ -53,6 +53,11 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    /**
+     *@param bool переменная для подтверждения/отказа в бронировании.
+     *           Метод работает только от владельца
+     *           и с актуальным статусом брони WAITING
+     */
     @Override
     public BookingDto patchUpdate(Long userId, Long bookingId, boolean bool) {
         Booking booking = repository.findById(bookingId).orElseThrow(
@@ -78,6 +83,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BookingDto getById(Long bookingId, Long userId) {
         Booking booking = repository.findById(bookingId).orElseThrow(
                 () -> new NotFoundException(
@@ -91,8 +97,8 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-
     @Override
+    @Transactional(readOnly = true)
     public List<BookingDto> getAllByUserId(Long userId, String state) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
@@ -105,7 +111,7 @@ public class BookingServiceImpl implements BookingService {
             type = StateType.valueOf(state);
         } catch (IllegalArgumentException exception) {
             throw new NotAvailableException(String.format(
-                    "Unknown state: %s", state
+                    "Unknown state: %s", state // такой комменарий требует постман
             ));
         }
         switch (type) {
@@ -132,6 +138,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingDto> getAllByOwnerId(Long userId, String state) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
@@ -171,5 +178,4 @@ public class BookingServiceImpl implements BookingService {
         }
         return BookingMapper.toBookingsDto(bookings);
     }
-
 }

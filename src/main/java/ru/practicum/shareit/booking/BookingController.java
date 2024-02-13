@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -10,6 +11,7 @@ import ru.practicum.shareit.booking.service.BookingService;
 import javax.validation.Valid;
 import java.util.List;
 
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(path = "/bookings")
@@ -25,6 +27,7 @@ public class BookingController {
             @Valid @RequestBody BookingDtoIn bookingDtoIn
     ) {
 
+        log.debug("POST: /bookings | userId: {}", userId);
         return service.add(bookingDtoIn, userId);
     }
 
@@ -35,6 +38,7 @@ public class BookingController {
             @RequestParam(value = "approved") boolean bool
     ) {
 
+        log.debug("PATCH: /bookings/{}?approved={} | userId: {}", bookingId, bool, userId);
         return service.patchUpdate(userId, bookingId, bool);
     }
 
@@ -44,24 +48,27 @@ public class BookingController {
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
+        log.debug("GET: /bookings/{} | userId: {}", bookingId, userId);
         return service.getById(bookingId, userId);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getAllByOwner(
             @RequestParam(required = false, defaultValue = "ALL") String state,
-            @RequestHeader("X-Sharer-User-Id") Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
+        log.debug("GET: /bookings/owner?state={} | userId: {}", state, userId);
         return service.getAllByOwnerId(userId, state);
     }
 
     @GetMapping
     public List<BookingDto> gelAllByUserId(
             @RequestParam(required = false, defaultValue = "ALL") String state,
-            @RequestHeader("X-Sharer-User-Id") Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
+        log.debug("GET: /bookings?state={} | userId: {}", state, userId);
         return service.getAllByUserId(userId, state);
     }
 }

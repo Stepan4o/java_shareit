@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.user.model.UserBookerDto;
 import ru.practicum.shareit.user.model.UserDto;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.model.UserDtoIn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +20,10 @@ public class UserMapper {
                 .build();
     }
 
-    public User toUser(UserDto userDto) {
+    public User toUser(UserDtoIn userDtoIn) {
         User user = new User();
-        user.setId(userDto.getId());
-        user.setName(userDto.getName());
-        user.setEmail(userDto.getEmail());
+        user.setName(userDtoIn.getName());
+        user.setEmail(userDtoIn.getEmail());
         return user;
     }
 
@@ -35,9 +35,9 @@ public class UserMapper {
         return usersDto;
     }
 
-    public UserBookerDto toBookerDto(User user) {
+    public UserBookerDto toBookerDto(Long bookerId) {
         return UserBookerDto.builder()
-                .id(user.getId())
+                .id(bookerId)
                 .build();
     }
 }

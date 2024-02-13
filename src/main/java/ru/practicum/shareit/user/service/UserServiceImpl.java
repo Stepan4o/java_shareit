@@ -8,6 +8,7 @@ import ru.practicum.shareit.user.model.UserDto;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.UserDtoIn;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,8 +32,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto createUser(UserDto userDto) {
-        User user = UserMapper.toUser(userDto);
+    public UserDto createUser(UserDtoIn userDtoIn) {
+        User user = UserMapper.toUser(userDtoIn);
         return UserMapper.toUserDto(repository.save(user));
     }
 
@@ -43,13 +44,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto patchUpdateUser(UserDto userDto, Long id) {
+    public UserDto patchUpdateUser(UserDtoIn userDtoIn, Long id) {
         User user = repository.findById(id).orElseThrow(
                 () -> new NotFoundException(
                         String.format("Пользователь с id:%d не найден", id)
                 ));
 
-        User updatedUser = updateUserFields(user, userDto);
+        User updatedUser = updateUserFields(user, userDtoIn);
         repository.save(updatedUser);
         return UserMapper.toUserDto(updatedUser);
     }
@@ -59,21 +60,21 @@ public class UserServiceImpl implements UserService {
         repository.deleteById(id);
     }
 
-    private User updateUserFields(User user, UserDto userDto) {
-        Map<String, BiConsumer<User, UserDto>> fieldsUpdaters = new HashMap<>();
+    private User updateUserFields(User user, UserDtoIn userDtoIn) {
+        Map<String, BiConsumer<User, UserDtoIn>> fieldsUpdaters = new HashMap<>();
         fieldsUpdaters.put("name", (u, uDto) -> u.setName(uDto.getName()));
         fieldsUpdaters.put("email", (u, uDto) -> u.setEmail(uDto.getEmail()));
 
         fieldsUpdaters.forEach((property, updaters) -> {
             switch (property) {
                 case "name":
-                    if (userDto.getName() != null) {
-                        updaters.accept(user, userDto);
+                    if (userDtoIn.getName() != null) {
+                        updaters.accept(user, userDtoIn);
                     }
                     break;
                 case "email":
-                    if (userDto.getEmail() != null) {
-                        updaters.accept(user, userDto);
+                    if (userDtoIn.getEmail() != null) {
+                        updaters.accept(user, userDtoIn);
                     }
                     break;
             }

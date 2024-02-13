@@ -32,7 +32,7 @@ public class BookingMapper {
         return BookingDto.builder()
                 .id(booking.getId())
                 .item(ItemMapper.toItemBookingDto(booking.getItem()))
-                .booker(UserMapper.toBookerDto(booking.getUser()))
+                .booker(UserMapper.toBookerDto(booking.getUser().getId()))
                 .start(booking.getStart())
                 .end(booking.getEnd())
                 .status(booking.getStateType())

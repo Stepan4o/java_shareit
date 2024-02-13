@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
@@ -49,6 +50,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ItemDto getItemById(Long id, Long userId) {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new NotFoundException(
@@ -72,6 +74,7 @@ public class ItemServiceImpl implements ItemService {
      * в противном случае - только с комментами
      */
     @Override
+    @Transactional(readOnly = true)
     public List<ItemDto> getAllItemsByUserId(Long userId) {
         User savedUser = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException(
@@ -90,6 +93,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItemDto> getItemsBySubstring(String searchText, Long userId) {
         if (searchText.isBlank()) {
             return new ArrayList<>();
