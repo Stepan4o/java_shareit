@@ -6,8 +6,8 @@ import ru.practicum.shareit.user.model.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.model.UserDtoIn;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class UserMapper {
@@ -27,12 +27,10 @@ public class UserMapper {
         return user;
     }
 
-    public List<UserDto> toUsersDto(Iterable<User> users) {
-        List<UserDto> usersDto = new ArrayList<>();
-        for (User u : users) {
-            usersDto.add(toUserDto(u));
-        }
-        return usersDto;
+    public List<UserDto> toUsersDto(List<User> users) {
+        return users.stream()
+                .map(UserMapper::toUserDto)
+                .collect(Collectors.toList());
     }
 
     public UserBookerDto toBookerDto(Long bookerId) {

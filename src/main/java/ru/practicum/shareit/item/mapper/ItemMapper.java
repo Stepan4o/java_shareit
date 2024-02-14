@@ -3,10 +3,11 @@ package ru.practicum.shareit.item.mapper;
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.dto.ItemBookingDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoIn;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class ItemMapper {
@@ -22,19 +23,16 @@ public class ItemMapper {
     }
 
     public List<ItemDto> toItemsDto(List<Item> items) {
-        List<ItemDto> res = new ArrayList<>();
-        for (Item item : items) {
-            res.add(toItemDto(item));
-        }
-        return res;
+        return items.stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
-    public Item toItem(ItemDto itemDto) {
+    public Item toItem(ItemDtoIn itemDtoIn) {
         Item item = new Item();
-        item.setId(itemDto.getId());
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
+        item.setName(itemDtoIn.getName());
+        item.setDescription(itemDtoIn.getDescription());
+        item.setAvailable(itemDtoIn.getAvailable());
         return item;
     }
 

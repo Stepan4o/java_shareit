@@ -8,8 +8,8 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.user.UserMapper;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class BookingMapper {
@@ -40,11 +40,9 @@ public class BookingMapper {
     }
 
     public List<BookingDto> toBookingsDto(List<Booking> bookings) {
-        List<BookingDto> res = new ArrayList<>();
-        for (Booking booking : bookings) {
-            res.add(toBookingDto(booking));
-        }
-        return res;
+        return bookings.stream()
+                .map(BookingMapper::toBookingDto)
+                .collect(Collectors.toList());
     }
 
     public Booking toBooking(BookingDtoIn bookingDtoIn) {
@@ -60,7 +58,7 @@ public class BookingMapper {
     }
 
     private void checkDateTime(LocalDateTime start, LocalDateTime end) {
-        String message = "Некорректно указано время";
+        String message = "Дата начала бронирования должна быть раньше даты его окончания";
 
         if (start.isAfter(end) || start.equals(end)) {
             throw new NotAvailableException(message);

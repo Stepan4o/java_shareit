@@ -54,9 +54,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     /**
-     *@param bool переменная для подтверждения/отказа в бронировании.
-     *           Метод работает только от владельца
-     *           и с актуальным статусом брони WAITING
+     * @param bool переменная для подтверждения/отказа в бронировании.
+     *             Метод работает только от владельца
+     *             и с актуальным статусом брони WAITING
      */
     @Override
     public BookingDto patchUpdate(Long userId, Long bookingId, boolean bool) {
@@ -106,14 +106,11 @@ public class BookingServiceImpl implements BookingService {
             ));
         }
         List<Booking> bookings = new ArrayList<>();
-        StateType type;
-        try {
-            type = StateType.valueOf(state);
-        } catch (IllegalArgumentException exception) {
-            throw new NotAvailableException(String.format(
-                    "Unknown state: %s", state // такой комменарий требует постман
-            ));
-        }
+
+        StateType type = StateType.fromString(state).orElseThrow(
+                () -> new NotAvailableException(String.format(
+                        "Unknown state: %s", state
+                )));
         switch (type) {
             case ALL:
                 bookings = repository.findAllByUserIdOrderByStartDesc(userId);
@@ -142,18 +139,15 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> getAllByOwnerId(Long userId, String state) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
-                    "Пользователь id:%d не найден", userId)
-            );
-        }
-        List<Booking> bookings = new ArrayList<>();
-        StateType type;
-        try {
-            type = StateType.valueOf(state);
-        } catch (IllegalArgumentException exception) {
-            throw new NotAvailableException(String.format(
-                    "Unknown state: %s", state
+                    "Пользователь id:%d не найден", userId
             ));
         }
+        List<Booking> bookings = new ArrayList<>();
+
+        StateType type = StateType.fromString(state).orElseThrow(
+                () -> new NotAvailableException(String.format(
+                        "Unknown state: %s", state
+                )));
         switch (type) {
             case ALL:
                 bookings = repository.findAllByItemUserIdOrderByStartDesc(userId);

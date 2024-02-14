@@ -14,6 +14,7 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentDtoIn;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoIn;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
@@ -38,12 +39,12 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
 
     @Override
-    public ItemDto createItem(ItemDto itemDto, Long userId) {
+    public ItemDto createItem(ItemDtoIn itemDtoIn, Long userId) {
         User savedUser = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException(
                         String.format("Пользователь с id:%d не найден", userId)
                 ));
-        Item item = ItemMapper.toItem(itemDto);
+        Item item = ItemMapper.toItem(itemDtoIn);
         item.setUser(savedUser);
         itemRepository.save(item);
         return ItemMapper.toItemDto(item);
@@ -123,7 +124,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto patchUpdateItem(ItemDto itemDto, Long id, Long userId) {
+    public ItemDto patchUpdateItem(ItemDtoIn itemDtoIn, Long id, Long userId) {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new NotFoundException(
                         String.format("Вещь с id:%d не найдена", id)
@@ -131,7 +132,7 @@ public class ItemServiceImpl implements ItemService {
 
         if (Objects.equals(item.getUser().getId(), userId)) {
 
-            Item updatedItem = updateItemFields(item, itemDto);
+            Item updatedItem = updateItemFields(item, itemDtoIn);
             itemRepository.save(updatedItem);
             return ItemMapper.toItemDto(updatedItem);
 
@@ -142,8 +143,8 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private Item updateItemFields(Item item, ItemDto itemDto) {
-        Map<String, BiConsumer<Item, ItemDto>> fieldsUpdaters = new HashMap<>();
+    private Item updateItemFields(Item item, ItemDtoIn itemDtoIn) {
+        Map<String, BiConsumer<Item, ItemDtoIn>> fieldsUpdaters = new HashMap<>();
         fieldsUpdaters.put("name", (i, iDto) -> i.setName(iDto.getName()));
         fieldsUpdaters.put("description", (i, iDto) -> i.setDescription(iDto.getDescription()));
         fieldsUpdaters.put("available", (i, iDto) -> i.setAvailable(iDto.getAvailable()));
@@ -151,18 +152,18 @@ public class ItemServiceImpl implements ItemService {
         fieldsUpdaters.forEach((field, updater) -> {
             switch (field) {
                 case "name":
-                    if (itemDto.getName() != null) {
-                        updater.accept(item, itemDto);
+                    if (itemDtoIn.getName() != null) {
+                        updater.accept(item, itemDtoIn);
                     }
                     break;
                 case "description":
-                    if (itemDto.getDescription() != null) {
-                        updater.accept(item, itemDto);
+                    if (itemDtoIn.getDescription() != null) {
+                        updater.accept(item, itemDtoIn);
                     }
                     break;
                 case "available":
-                    if (itemDto.getAvailable() != null) {
-                        updater.accept(item, itemDto);
+                    if (itemDtoIn.getAvailable() != null) {
+                        updater.accept(item, itemDtoIn);
                     }
                     break;
             }
