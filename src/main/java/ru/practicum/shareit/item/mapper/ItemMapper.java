@@ -13,13 +13,22 @@ import java.util.stream.Collectors;
 public class ItemMapper {
 
     public ItemDto toItemDto(Item item) {
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.isAvailable())
-                .comments(List.of())
-                .build();
+        if (item.getItemRequest() != null) {
+            return ItemDto.builder()
+                    .id(item.getId())
+                    .name(item.getName())
+                    .description(item.getDescription())
+                    .available(item.isAvailable())
+                    .requestId(item.getItemRequest().getId())
+                    .build();
+        } else {
+            return ItemDto.builder()
+                    .id(item.getId())
+                    .name(item.getName())
+                    .description(item.getDescription())
+                    .available(item.isAvailable())
+                    .build();
+        }
     }
 
     public List<ItemDto> toItemsDto(List<Item> items) {

@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -21,6 +20,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -28,7 +29,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
@@ -37,6 +37,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     public ItemDto createItem(ItemDtoIn itemDtoIn, Long userId) {
@@ -46,6 +47,13 @@ public class ItemServiceImpl implements ItemService {
                 ));
         Item item = ItemMapper.toItem(itemDtoIn);
         item.setUser(savedUser);
+
+        // проверка на присутствуие requestId в приходящем объекте
+        Long requestId = itemDtoIn.getRequestId();
+        if (requestId != null) {
+            setRequestIfExist(item, requestId);
+        }
+
         itemRepository.save(item);
         return ItemMapper.toItemDto(item);
     }
@@ -64,7 +72,6 @@ public class ItemServiceImpl implements ItemService {
             // Бронирования только в случае запроса владельцем
             setNextAndLastBooking(itemDto);
         }
-        log.debug("userId:{} поиск вещи по itemId:{}", userId, item.getId());
         return itemDto;
     }
 
@@ -103,8 +110,6 @@ public class ItemServiceImpl implements ItemService {
                     .findAllByAvailableTrueAndDescriptionContainingIgnoreCaseOrNameContainingIgnoreCase(
                             searchText, searchText
                     );
-
-            log.debug("userId:{} поиск вещи по строке text:{}", userId, searchText);
             return ItemMapper.toItemsDto(itemList);
         }
     }
@@ -189,5 +194,17 @@ public class ItemServiceImpl implements ItemService {
         List<Comment> comments = commentRepository.findAllByItemId(itemDto.getId());
         List<CommentDto> commentsDtoList = CommentMapper.toCommentsDto(comments);
         itemDto.setComments(commentsDtoList);
+    }
+
+    /**
+     * @param requestId  Добавить request к item если такой существует в базе
+     *                   или же сообщить об ошибке
+     */
+    private void setRequestIfExist(Item item, Long requestId) {
+        Optional<ItemRequest> itemRequest = itemRequestRepository.findById(requestId);
+        item.setItemRequest(itemRequest.orElseThrow(
+                () -> new NotFoundException(String.format(
+                        "ItemRequest с id:%d не найден", requestId
+                ))));
     }
 }
