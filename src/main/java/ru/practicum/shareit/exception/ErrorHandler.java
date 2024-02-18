@@ -10,11 +10,33 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Objects;
 
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
+
+
+
+
+
+
+    // TODO собрать BAD_REQUEST в одну группу исключений
+
+
+
+
+
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handeConstraintViolationException(
+            final ConstraintViolationException exception
+    ) {
+        log.error(exception.getMessage());
+        return new ErrorResponse(exception.getMessage());
+    }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -83,9 +105,10 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleNotAvailableException(
             final NotAvailableException exception
-
     ) {
         log.error(exception.getMessage());
         return new ErrorResponse(exception.getMessage());
     }
+
+
 }

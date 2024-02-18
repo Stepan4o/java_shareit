@@ -9,6 +9,7 @@ import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @Slf4j
@@ -55,20 +56,24 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingDto> getAllByOwner(
             @RequestParam(required = false, defaultValue = "ALL") String state,
-            @RequestHeader(HEADER_USER_ID) Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId,
+            @RequestParam(value = "from", defaultValue = "0") @Min(0) Integer from,
+            @RequestParam(value = "size", defaultValue = "10") @Min(1) Integer size
     ) {
 
         log.debug("GET: /bookings/owner?state={} | userId: {}", state, userId);
-        return service.getAllByOwnerId(userId, state);
+        return service.getAllByOwnerId(userId, state, from, size);
     }
 
     @GetMapping
     public List<BookingDto> gelAllByUserId(
             @RequestParam(required = false, defaultValue = "ALL") String state,
-            @RequestHeader(HEADER_USER_ID) Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId,
+            @RequestParam(value = "from", defaultValue = "0") @Min(0) Integer from,
+            @RequestParam(value = "size", defaultValue = "10") @Min(1) Integer size
     ) {
 
         log.debug("GET: /bookings?state={} | userId: {}", state, userId);
-        return service.getAllByUserId(userId, state);
+        return service.getAllByUserId(userId, state, from, size);
     }
 }

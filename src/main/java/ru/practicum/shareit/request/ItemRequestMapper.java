@@ -15,12 +15,13 @@ public class ItemRequestMapper {
         return itemRequest;
     }
 
-    public ItemRequestDto toItemRequestDto(ItemRequest itemRequest, Long userId) {
+    public ItemRequestDto toItemRequestDto(ItemRequest itemRequest) {
         return ItemRequestDto.builder()
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())
-                .userId(userId)
                 .created(itemRequest.getCreated())
+                .userId(itemRequest.getUser().getId())
                 .build();
     }
+
 }

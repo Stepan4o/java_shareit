@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.dto.ItemBookingDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoIn;
+import ru.practicum.shareit.item.dto.ItemDtoShort;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -29,6 +30,16 @@ public class ItemMapper {
                     .available(item.isAvailable())
                     .build();
         }
+    }
+
+    public ItemDtoShort toItemDtoShort(Item item) {
+        return ItemDtoShort.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.isAvailable())
+                .requestId(item.getItemRequest().getId())
+                .build();
     }
 
     public List<ItemDto> toItemsDto(List<Item> items) {

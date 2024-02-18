@@ -99,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByUserId(Long userId, String state) {
+    public List<BookingDto> getAllByUserId(Long userId, String state, Integer from, Integer size) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
                     "Пользователь id:%d не найден", userId
@@ -136,7 +136,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByOwnerId(Long userId, String state) {
+    public List<BookingDto> getAllByOwnerId(Long userId,
+                                            String state,
+                                            Integer from,
+                                            Integer size) {
+
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
                     "Пользователь id:%d не найден", userId
