@@ -2,7 +2,9 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.AlreadyExistException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.UserMapper;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import static ru.practicum.shareit.Constants.EMAIL_ALREADY_EXIST;
 import static ru.practicum.shareit.Constants.USER_NOT_FOUND;
 
 @Service
@@ -33,7 +36,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto add(UserDtoIn userDtoIn) {
         User newUser = UserMapper.toUser(userDtoIn);
-        return UserMapper.toUserDto(repository.save(newUser));
+        try {
+            repository.save(newUser);
+            return UserMapper.toUserDto(newUser);
+        } catch (DataIntegrityViolationException exception) {
+            throw new AlreadyExistException(String.format(
+                    EMAIL_ALREADY_EXIST, userDtoIn.getEmail()
+            ));
+        }
     }
 
     @Override

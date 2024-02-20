@@ -1,7 +1,6 @@
 package ru.practicum.shareit.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,23 +12,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.validation.ConstraintViolationException;
 import java.util.Objects;
 
+import static ru.practicum.shareit.Constants.HEADER_USER_ID;
+
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
-
-
-
-
-
-
-    // TODO собрать BAD_REQUEST в одну группу исключений
-
-
-
-
-
-
-
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -37,35 +24,45 @@ public class ErrorHandler {
             final MethodArgumentNotValidException exception
     ) {
         FieldError error = Objects.requireNonNull(exception.getFieldError());
-        log.error("Ошибка валидации! Поле '{}' {}",
+        log.error("Некорректные данные -> '{}' : {}",
                 error.getField(),
                 error.getDefaultMessage()
         );
         return new ErrorResponse(
-                String.format("Ошибка валидации! Поле '%s' %s",
+                String.format("Некорректные данные -> '%s' : %s",
                         error.getField(),
                         error.getDefaultMessage())
         );
     }
 
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleAlreadyExistException(
-            final AlreadyExistException exception
+    @ExceptionHandler({
+            MissingRequestHeaderException.class,
+            NotAvailableException.class,
+            ConstraintViolationException.class
+    })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBadRequestException(
+            final Exception exception
     ) {
-        log.error(exception.getMessage());
-        return new ErrorResponse(exception.getMessage());
+        if (exception instanceof MissingRequestHeaderException) {
+            log.error("Incorrect header {}", HEADER_USER_ID);
+            return new ErrorResponse(String.format(
+                    "Incorrect header %s", HEADER_USER_ID
+            ));
+        } else {
+            log.error(exception.getMessage());
+            return new ErrorResponse(exception.getMessage());
+        }
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse hanldeSqlException(
-            final DataIntegrityViolationException exception
+    public ErrorResponse handleAlreadyExistsException(
+            final AlreadyExistException exception
     ) {
-        String message = Objects.requireNonNull(exception.getMessage());
-        log.error(message);
-        return new ErrorResponse("Некорректно указана информация");
+
+        log.error(exception.getMessage());
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
@@ -85,32 +82,4 @@ public class ErrorHandler {
         log.error(exception.getMessage());
         return new ErrorResponse(exception.getMessage());
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMissingRequestHeaderException(
-            final MissingRequestHeaderException exception
-    ) {
-        log.error(exception.getMessage());
-        return new ErrorResponse("Некорректное значение UserId");
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleNotAvailableException(
-            final NotAvailableException exception
-    ) {
-        log.error(exception.getMessage());
-        return new ErrorResponse(exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handeConstraintViolationException(
-            final ConstraintViolationException exception
-    ) {
-        log.error(exception.getMessage());
-        return new ErrorResponse(exception.getMessage());
-    }
-
 }

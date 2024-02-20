@@ -32,6 +32,7 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
+    // TODO нужен рефакторинг (так же исправить "Не найдено")
     @Override
     public BookingDto add(BookingDtoIn bookingDtoIn, Long userId) {
         Item savedItem = itemRepository.findById(bookingDtoIn.getItemId()).orElseThrow(
