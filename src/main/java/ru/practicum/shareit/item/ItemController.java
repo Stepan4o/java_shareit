@@ -23,6 +23,10 @@ public class ItemController {
 
     private final ItemService itemService;
 
+    /** По эндпоинту два сценария. Обычное добавление вещи, или же добавление
+     * к соответсвующему запросу по requestId (указанному в теле itemDtoIn.requestId)
+     * созданному другим пользователем по желаемой вещи
+     */
     @PostMapping
     public ItemDto addNewItem(
             @Valid @RequestBody ItemDtoIn itemDtoIn,
@@ -64,6 +68,9 @@ public class ItemController {
         return itemService.getItemsBySubstring(text, userId);
     }
 
+    /** Если запрашивает владелец, вернуть с комментрариями пользователей
+     *  и последними/следующими бронированиями. Иначле только с комметариями
+     */
     @GetMapping
     public List<ItemDto> getAllItemsByUserId(
             @RequestHeader(HEADER_USER_ID) Long userId
@@ -73,6 +80,8 @@ public class ItemController {
         return itemService.getAllItemsByUserId(userId);
     }
 
+    /** Комметраий можно оставить толко пользователю который брал вещь в аренду
+     */
     @PostMapping("/{itemId}/comment")
     public CommentDto addCommentToItem(
             @RequestHeader(HEADER_USER_ID) Long userId,

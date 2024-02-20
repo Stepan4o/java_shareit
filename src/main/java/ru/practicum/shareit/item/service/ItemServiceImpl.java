@@ -45,8 +45,6 @@ public class ItemServiceImpl implements ItemService {
         Item newItem = ItemMapper.toItem(itemDtoIn);
         newItem.setUser(savedUser);
 
-        // TODO сделать что то с комментарием (бессмысленный)
-        // проверка на присутствуие requestId в приходящем объекте
         Long requestId = itemDtoIn.getRequestId();
         if (requestId != null) {
             setRequestIfExist(newItem, requestId);
@@ -63,7 +61,6 @@ public class ItemServiceImpl implements ItemService {
         ItemDto itemDto = ItemMapper.toItemDto(item);
         setComments(itemDto);
 
-        // В случае запроса владельцем добавить бронирования
         if (isOwner(item.getUser().getId(), (userId))) {
             setNextAndLastBooking(itemDto);
         }
