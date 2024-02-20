@@ -29,14 +29,7 @@ public class ErrorHandler {
 
 
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handeConstraintViolationException(
-            final ConstraintViolationException exception
-    ) {
-        log.error(exception.getMessage());
-        return new ErrorResponse(exception.getMessage());
-    }
+
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -54,6 +47,7 @@ public class ErrorHandler {
                         error.getDefaultMessage())
         );
     }
+
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
@@ -110,5 +104,13 @@ public class ErrorHandler {
         return new ErrorResponse(exception.getMessage());
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handeConstraintViolationException(
+            final ConstraintViolationException exception
+    ) {
+        log.error(exception.getMessage());
+        return new ErrorResponse(exception.getMessage());
+    }
 
 }

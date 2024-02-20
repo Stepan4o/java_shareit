@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -30,18 +32,18 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto add(BookingDtoIn bookingDtoIn, Long userId) {
-        Item item = itemRepository.findById(bookingDtoIn.getItemId()).orElseThrow(
+        Item savedItem = itemRepository.findById(bookingDtoIn.getItemId()).orElseThrow(
                 () -> new NotFoundException(String.format(
                         "Вещь с id:%d не найдена", bookingDtoIn.getItemId()
                 )));
-        if (item.isAvailable()) {
-            if (!Objects.equals(item.getUser().getId(), userId)) {
+        if (savedItem.isAvailable()) {
+            if (!Objects.equals(savedItem.getUser().getId(), userId)) {
                 User booker = userRepository.findById(userId).orElseThrow(
                         () -> new NotFoundException(String.format(
                                 "Пользователь с id:%d не найден", userId
                         )));
                 Booking booking = BookingMapper.toBooking(bookingDtoIn);
-                booking.setItem(item);
+                booking.setItem(savedItem);
                 booking.setUser(booker);
                 repository.save(booking);
                 return BookingMapper.toBookingDto(booking);
@@ -59,7 +61,7 @@ public class BookingServiceImpl implements BookingService {
      *             и с актуальным статусом брони WAITING
      */
     @Override
-    public BookingDto patchUpdate(Long userId, Long bookingId, boolean bool) {
+    public BookingDto update(Long userId, Long bookingId, boolean bool) {
         Booking booking = repository.findById(bookingId).orElseThrow(
                 () -> new NotFoundException(
                         String.format("Booking с id:%d не найден", bookingId)
@@ -106,6 +108,7 @@ public class BookingServiceImpl implements BookingService {
             ));
         }
         List<Booking> bookings = new ArrayList<>();
+        Pageable pageable = PageRequest.of(from / size, size);
 
         StateType type = StateType.fromString(state).orElseThrow(
                 () -> new NotAvailableException(String.format(
@@ -113,24 +116,25 @@ public class BookingServiceImpl implements BookingService {
                 )));
         switch (type) {
             case ALL:
-                bookings = repository.findAllByUserIdOrderByStartDesc(userId);
+                bookings = repository.findAllByUserIdOrderByStartDesc(userId, pageable);
                 break;
             case FUTURE:
-                bookings = repository.findAllFutureByUserId(userId);
+                bookings = repository.findAllFutureByUserId(userId, pageable);
                 break;
             case CURRENT:
-                bookings = repository.findAllCurrentByUserId(userId);
+                bookings = repository.findAllCurrentByUserId(userId, pageable);
                 break;
             case PAST:
-                bookings = repository.findAllPastByUserId(userId);
+                bookings = repository.findAllPastByUserId(userId, pageable);
                 break;
             case WAITING:
-                bookings = repository.findAllByUserIdAndStateType(userId, StateType.WAITING);
+                bookings = repository.findAllByUserIdAndStateType(userId, StateType.WAITING, pageable);
                 break;
             case REJECTED:
-                bookings = repository.findAllByUserIdAndStateType(userId, StateType.REJECTED);
+                bookings = repository.findAllByUserIdAndStateType(userId, StateType.REJECTED, pageable);
                 break;
         }
+
         return BookingMapper.toBookingsDto(bookings);
     }
 
@@ -147,6 +151,7 @@ public class BookingServiceImpl implements BookingService {
             ));
         }
         List<Booking> bookings = new ArrayList<>();
+        Pageable pageable = PageRequest.of(from / size, size);
 
         StateType type = StateType.fromString(state).orElseThrow(
                 () -> new NotAvailableException(String.format(
@@ -154,24 +159,24 @@ public class BookingServiceImpl implements BookingService {
                 )));
         switch (type) {
             case ALL:
-                bookings = repository.findAllByItemUserIdOrderByStartDesc(userId);
+                bookings = repository.findAllByItemUserIdOrderByStartDesc(userId, pageable);
                 break;
             case FUTURE:
-                bookings = repository.findAllFutureByOwnerId(userId);
+                bookings = repository.findAllFutureByOwnerId(userId, pageable);
                 break;
             case CURRENT:
-                bookings = repository.findAllCurrentByOwnerId(userId);
+                bookings = repository.findAllCurrentByOwnerId(userId, pageable);
                 break;
             case PAST:
-                bookings = repository.findAllPastByOwnerId(userId);
+                bookings = repository.findAllPastByOwnerId(userId, pageable);
                 break;
             case WAITING:
                 bookings = repository
-                        .findAllByItemUserIdAndStateType(userId, StateType.WAITING);
+                        .findAllByItemUserIdAndStateType(userId, StateType.WAITING, pageable);
                 break;
             case REJECTED:
                 bookings = repository
-                        .findAllByItemUserIdAndStateType(userId, StateType.REJECTED);
+                        .findAllByItemUserIdAndStateType(userId, StateType.REJECTED, pageable);
                 break;
         }
         return BookingMapper.toBookingsDto(bookings);

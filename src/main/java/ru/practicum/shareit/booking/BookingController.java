@@ -23,7 +23,7 @@ public class BookingController {
     private final BookingService service;
 
     @PostMapping
-    public BookingDto add(
+    public BookingDto addNewBooking(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @Valid @RequestBody BookingDtoIn bookingDtoIn
     ) {
@@ -33,18 +33,18 @@ public class BookingController {
     }
 
     @PatchMapping("/{bookingId}")
-    public BookingDto patchUpdate(
+    public BookingDto updateBooking(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @PathVariable Long bookingId,
             @RequestParam(value = "approved") boolean bool
     ) {
 
         log.debug("PATCH: /bookings/{}?approved={} | userId: {}", bookingId, bool, userId);
-        return service.patchUpdate(userId, bookingId, bool);
+        return service.update(userId, bookingId, bool);
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto getById(
+    public BookingDto getBooking(
             @PathVariable Long bookingId,
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
@@ -54,7 +54,7 @@ public class BookingController {
     }
 
     @GetMapping("/owner")
-    public List<BookingDto> getAllByOwner(
+    public List<BookingDto> getAllByOwnerId(
             @RequestParam(required = false, defaultValue = "ALL") String state,
             @RequestHeader(HEADER_USER_ID) Long userId,
             @RequestParam(value = "from", defaultValue = "0") @Min(0) Integer from,

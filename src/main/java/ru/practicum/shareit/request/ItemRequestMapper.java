@@ -23,5 +23,4 @@ public class ItemRequestMapper {
                 .userId(itemRequest.getUser().getId())
                 .build();
     }
-
 }

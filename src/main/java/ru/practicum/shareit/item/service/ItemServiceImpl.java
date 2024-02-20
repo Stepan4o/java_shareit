@@ -55,7 +55,9 @@ public class ItemServiceImpl implements ItemService {
         }
 
         itemRepository.save(item);
+//        return ItemMapper.toItemDto(item);
         return ItemMapper.toItemDto(item);
+
     }
 
     @Override
