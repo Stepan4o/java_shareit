@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.shareit.booking.model.StateType;
 import ru.practicum.shareit.item.dto.ItemBookingDto;
-import ru.practicum.shareit.user.model.UserBookerDto;
+import ru.practicum.shareit.user.dto.UserDtoOut;
 
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
@@ -19,7 +19,7 @@ public class BookingDto {
 
     private ItemBookingDto item;
 
-    private UserBookerDto booker;
+    private UserDtoOut.BookerDto booker;
 
     @NotNull
     @FutureOrPresent(message = "Некорректно указана дата")
