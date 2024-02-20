@@ -56,11 +56,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         User user = getUser(userId);
         List<ItemRequest> itemRequests = itemRequestRepository.findAllByUserId(user.getId());
 
-        List<ItemRequestDto> dtos = itemRequests.stream()
+        List<ItemRequestDto> dtoList = itemRequests.stream()
                 .map(ItemRequestMapper::toItemRequestDto)
                 .collect(Collectors.toList());
-        dtos.forEach(this::setItemsToRequest);
-        return dtos;
+        dtoList.forEach(this::setItemsToRequest);
+        return dtoList;
     }
 
     @Override

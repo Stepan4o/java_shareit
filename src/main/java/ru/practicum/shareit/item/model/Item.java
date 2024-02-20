@@ -9,8 +9,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "items")
-@Getter
-@Setter
+@Getter @Setter
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,13 +19,13 @@ public class Item {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "description", nullable = false)
+    @Column(nullable = false)
     private String description;
 
-    @Column(name = "available", nullable = false)
+    @Column(nullable = false)
     private boolean available;
 
     @ManyToOne

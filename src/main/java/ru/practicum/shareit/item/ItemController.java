@@ -2,7 +2,6 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -22,39 +21,37 @@ import java.util.List;
 public class ItemController {
     private static final String HEADER_USER_ID = "X-Sharer-User-Id";
 
-    @Autowired
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto createItem(
-            @Valid
-            @RequestBody ItemDtoIn itemDtoIn,
+    public ItemDto addNewItem(
+            @Valid @RequestBody ItemDtoIn itemDtoIn,
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
         log.debug("POST: /items | userId: {}", userId);
-        return itemService.createItem(itemDtoIn, userId);
+        return itemService.add(itemDtoIn, userId);
     }
 
-    @PatchMapping("/{id}")
-    public ItemDto patchUpdateItem(
+    @PatchMapping("/{itemId}")
+    public ItemDto updateItem(
             @RequestBody ItemDtoIn itemDtoIn,
             @RequestHeader(HEADER_USER_ID) Long userId,
-            @PathVariable Long id
+            @PathVariable Long itemId
     ) {
 
-        log.debug("PATCH: /items/{} | userId: {}", id, userId);
-        return itemService.patchUpdateItem(itemDtoIn, id, userId);
+        log.debug("PATCH: /items/{} | userId: {}", itemId, userId);
+        return itemService.update(itemDtoIn, itemId, userId);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{itemId}")
     public ItemDto getItemById(
             @RequestHeader(HEADER_USER_ID) Long userId,
-            @PathVariable Long id
+            @PathVariable Long itemId
     ) {
 
-        log.debug("GET: /items/{} | userId: {}", id, userId);
-        return itemService.getItemById(id, userId);
+        log.debug("GET: /items/{} | userId: {}", itemId, userId);
+        return itemService.getItemById(itemId, userId);
     }
 
     @GetMapping("/search")
@@ -77,7 +74,7 @@ public class ItemController {
     }
 
     @PostMapping("/{itemId}/comment")
-    public CommentDto addComment(
+    public CommentDto addCommentToItem(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @Valid @RequestBody CommentDtoIn commentDtoIn,
             @PathVariable Long itemId

@@ -40,65 +40,50 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRequestRepository itemRequestRepository;
 
     @Override
-    public ItemDto createItem(ItemDtoIn itemDtoIn, Long userId) {
-        User savedUser = userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException(
-                        String.format("Пользователь с id:%d не найден", userId)
-                ));
-        Item item = ItemMapper.toItem(itemDtoIn);
-        item.setUser(savedUser);
+    public ItemDto add(ItemDtoIn itemDtoIn, Long userId) {
+        User savedUser = getUserIfExist(userId);
+        Item newItem = ItemMapper.toItem(itemDtoIn);
+        newItem.setUser(savedUser);
 
+        // TODO сделать что то с комментарием (бессмысленный)
         // проверка на присутствуие requestId в приходящем объекте
         Long requestId = itemDtoIn.getRequestId();
         if (requestId != null) {
-            setRequestIfExist(item, requestId);
+            setRequestIfExist(newItem, requestId);
         }
 
-        itemRepository.save(item);
-//        return ItemMapper.toItemDto(item);
-        return ItemMapper.toItemDto(item);
-
+        itemRepository.save(newItem);
+        return ItemMapper.toItemDto(newItem);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ItemDto getItemById(Long id, Long userId) {
-        Item item = itemRepository.findById(id).orElseThrow(
-                () -> new NotFoundException(
-                        String.format("Предмет с id:%d не найден", id)
-                ));
+    public ItemDto getItemById(Long itemId, Long userId) {
+        Item item = getItemIfExist(itemId);
         ItemDto itemDto = ItemMapper.toItemDto(item);
         setComments(itemDto);
 
-        if (Objects.equals(item.getUser().getId(), (userId))) {
-            // Бронирования только в случае запроса владельцем
+        // В случае запроса владельцем добавить бронирования
+        if (isOwner(item.getUser().getId(), (userId))) {
             setNextAndLastBooking(itemDto);
         }
         return itemDto;
     }
 
-    /**
-     * В методе получаю список всех предметов пользоваетля,
-     * проверяю первый найденный item и id его владельца
-     * если запрашивает владелец, отдаю с комментами и бронированиями
-     * в противном случае - только с комментами
-     */
     @Override
     @Transactional(readOnly = true)
     public List<ItemDto> getAllItemsByUserId(Long userId) {
-        User savedUser = userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException(
-                        String.format("Пользователь с id:%d не найден", userId)
-                ));
+        User savedUser = getUserIfExist(userId);
 
         List<Item> itemList = itemRepository.findByUserId(savedUser.getId());
-        Optional<Item> item = itemList.stream().findFirst();
         List<ItemDto> itemsDto = ItemMapper.toItemsDto(itemList);
         itemsDto.forEach(this::setComments);
 
-        if (item.isPresent() && Objects.equals(item.get().getUser().getId(), userId)) {
+        Optional<Item> item = itemList.stream().findFirst();
+        if (item.isPresent() && isOwner(item.get().getUser().getId(), userId)) {
             itemsDto.forEach(this::setNextAndLastBooking);
         }
+
         return itemsDto;
     }
 
@@ -125,24 +110,21 @@ public class ItemServiceImpl implements ItemService {
                         LocalDateTime.now(),
                         StateType.APPROVED
                 ).orElseThrow(() -> new NotAvailableException("Ошибка"));
-        Comment comment = CommentMapper.toComment(commentDtoIn, booking.getUser(), booking.getItem());
-        commentRepository.save(comment);
-        return CommentMapper.toCommentDto(comment);
+        Comment newComment = CommentMapper.toComment(commentDtoIn, booking.getUser(), booking.getItem());
+        commentRepository.save(newComment);
+
+        return CommentMapper.toCommentDto(newComment);
     }
 
     @Override
-    public ItemDto patchUpdateItem(ItemDtoIn itemDtoIn, Long id, Long userId) {
-        Item item = itemRepository.findById(id).orElseThrow(
-                () -> new NotFoundException(
-                        String.format("Вещь с id:%d не найдена", id)
-                ));
+    public ItemDto update(ItemDtoIn itemDtoIn, Long itemId, Long userId) {
+        Item savedItem = getItemIfExist(itemId);
 
-        if (Objects.equals(item.getUser().getId(), userId)) {
-
-            Item updatedItem = updateItemFields(item, itemDtoIn);
+        if (isOwner(savedItem.getUser().getId(), userId)) {
+            Item updatedItem = updateItemFields(savedItem, itemDtoIn);
             itemRepository.save(updatedItem);
-            return ItemMapper.toItemDto(updatedItem);
 
+            return ItemMapper.toItemDto(updatedItem);
         } else {
             throw new AccessDeniedException(
                     "Внесение изменений доступно только владельцам"
@@ -182,10 +164,10 @@ public class ItemServiceImpl implements ItemService {
         Optional<Booking> nextBooking = bookingRepository
                 .findNextBookingByItemId(itemDto.getId(), StateType.APPROVED)
                 .stream().findFirst();
-
         Optional<Booking> lastBooking = bookingRepository
                 .findLastBookingByItemId(itemDto.getId(), StateType.APPROVED)
                 .stream().findFirst();
+
         nextBooking.ifPresent(booking ->
                 itemDto.setNextBooking(BookingMapper.toNextBookingDto(booking)));
         lastBooking.ifPresent(booking ->
@@ -199,8 +181,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     /**
-     * @param requestId  Добавить request к item если такой существует в базе
-     *                   или же сообщить об ошибке
+     * @param requestId Добавить request к item если такой существует в базе
+     *                  или же сообщить об ошибке
      */
     private void setRequestIfExist(Item item, Long requestId) {
         Optional<ItemRequest> itemRequest = itemRequestRepository.findById(requestId);
@@ -208,5 +190,23 @@ public class ItemServiceImpl implements ItemService {
                 () -> new NotFoundException(String.format(
                         "ItemRequest с id:%d не найден", requestId
                 ))));
+    }
+
+    private User getUserIfExist(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException(
+                        String.format("Пользователь с id:%d не найден", userId)
+                ));
+    }
+
+    private Item getItemIfExist(Long itemId) {
+        return itemRepository.findById(itemId).orElseThrow(
+                () -> new NotFoundException(
+                        String.format("Вещь с id:%d не найдена", itemId)
+                ));
+    }
+
+    private boolean isOwner(Long ownerId, Long userId) {
+        return Objects.equals(ownerId, userId);
     }
 }
