@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static ru.practicum.shareit.Constants.*;
+
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
@@ -34,13 +36,13 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto add(BookingDtoIn bookingDtoIn, Long userId) {
         Item savedItem = itemRepository.findById(bookingDtoIn.getItemId()).orElseThrow(
                 () -> new NotFoundException(String.format(
-                        "Вещь с id:%d не найдена", bookingDtoIn.getItemId()
+                        ITEM_NOT_FOUND, bookingDtoIn.getItemId()
                 )));
         if (savedItem.isAvailable()) {
             if (!Objects.equals(savedItem.getUser().getId(), userId)) {
                 User booker = userRepository.findById(userId).orElseThrow(
                         () -> new NotFoundException(String.format(
-                                "Пользователь с id:%d не найден", userId
+                                USER_NOT_FOUND, userId
                         )));
                 Booking booking = BookingMapper.toBooking(bookingDtoIn);
                 booking.setItem(savedItem);
@@ -55,21 +57,16 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    /**
-     * @param bool переменная для подтверждения/отказа в бронировании.
-     *             Метод работает только от владельца
-     *             и с актуальным статусом брони WAITING
-     */
     @Override
-    public BookingDto update(Long userId, Long bookingId, boolean bool) {
+    public BookingDto update(Long userId, Long bookingId, boolean isApprove) {
         Booking booking = repository.findById(bookingId).orElseThrow(
                 () -> new NotFoundException(
-                        String.format("Booking с id:%d не найден", bookingId)
+                        String.format(BOOKING_NOT_FOUND, bookingId)
                 ));
         if (Objects.equals(booking.getItem().getUser().getId(), userId)) {
 
             if (booking.getStateType().equals(StateType.WAITING)) {
-                if (bool) {
+                if (isApprove) {
                     booking.setStateType(StateType.APPROVED);
                 } else {
                     booking.setStateType(StateType.REJECTED);
@@ -89,7 +86,7 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto getById(Long bookingId, Long userId) {
         Booking booking = repository.findById(bookingId).orElseThrow(
                 () -> new NotFoundException(
-                        String.format("Booking с id:%d не найден", bookingId)
+                        String.format(BOOKING_NOT_FOUND, bookingId)
                 ));
         if (booking.getItem().getUser().getId().equals(userId) ||
                 booking.getUser().getId().equals(userId)) {
@@ -104,7 +101,7 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> getAllByUserId(Long userId, String state, Integer from, Integer size) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
-                    "Пользователь id:%d не найден", userId
+                    USER_NOT_FOUND, userId
             ));
         }
         List<Booking> bookings = new ArrayList<>();
@@ -112,7 +109,7 @@ public class BookingServiceImpl implements BookingService {
 
         StateType type = StateType.fromString(state).orElseThrow(
                 () -> new NotAvailableException(String.format(
-                        "Unknown state: %s", state
+                        UNKNOWN_STATE, state
                 )));
         switch (type) {
             case ALL:
@@ -147,7 +144,7 @@ public class BookingServiceImpl implements BookingService {
 
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
-                    "Пользователь id:%d не найден", userId
+                    USER_NOT_FOUND, userId
             ));
         }
         List<Booking> bookings = new ArrayList<>();
@@ -155,7 +152,7 @@ public class BookingServiceImpl implements BookingService {
 
         StateType type = StateType.fromString(state).orElseThrow(
                 () -> new NotAvailableException(String.format(
-                        "Unknown state: %s", state
+                        UNKNOWN_STATE, state
                 )));
         switch (type) {
             case ALL:

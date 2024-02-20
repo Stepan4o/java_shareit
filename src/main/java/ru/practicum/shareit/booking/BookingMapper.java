@@ -14,15 +14,15 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class BookingMapper {
 
-    public NextBookingDto toNextBookingDto(Booking booking) {
-        return NextBookingDto.builder()
+    public BookingDto.NextBookingDto toNextBookingDto(Booking booking) {
+        return BookingDto.NextBookingDto.builder()
                 .id(booking.getId())
                 .bookerId(booking.getUser().getId())
                 .build();
     }
 
-    public LastBookingDto toLastBookingDto(Booking booking) {
-        return LastBookingDto.builder()
+    public BookingDto.LastBookingDto toLastBookingDto(Booking booking) {
+        return BookingDto.LastBookingDto.builder()
                 .id(booking.getId())
                 .bookerId(booking.getUser().getId())
                 .build();

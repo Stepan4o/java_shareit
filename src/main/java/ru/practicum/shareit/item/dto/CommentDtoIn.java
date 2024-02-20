@@ -4,14 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class CommentDtoIn {
-    @NotEmpty
+    @NotBlank
     private String text;
     private LocalDateTime create = LocalDateTime.now();
 }

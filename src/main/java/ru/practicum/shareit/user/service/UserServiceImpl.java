@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.user.dto.UserDtoOut;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import static ru.practicum.shareit.Constants.USER_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -23,25 +25,25 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
     @Override
-    public UserDtoOut getById(Long userId) {
+    public UserDto getById(Long userId) {
         User savedUser = getUserIfExist(userId);
         return UserMapper.toUserDto(savedUser);
     }
 
     @Override
-    public UserDtoOut add(UserDtoIn userDtoIn) {
+    public UserDto add(UserDtoIn userDtoIn) {
         User newUser = UserMapper.toUser(userDtoIn);
         return UserMapper.toUserDto(repository.save(newUser));
     }
 
     @Override
-    public List<UserDtoOut> getAll() {
+    public List<UserDto> getAll() {
         List<User> users = repository.findAll();
         return UserMapper.toUsersDto(users);
     }
 
     @Override
-    public UserDtoOut updateById(UserDtoIn userDtoIn, Long userId) {
+    public UserDto updateById(UserDtoIn userDtoIn, Long userId) {
         User savedUser = getUserIfExist(userId);
 
         User updatedUser = updateUserFields(savedUser, userDtoIn);
@@ -79,7 +81,7 @@ public class UserServiceImpl implements UserService {
     private User getUserIfExist(Long userId) {
         return repository.findById(userId).orElseThrow(
                 () -> new NotFoundException(
-                        String.format("Пользователь с id:%d не найден", userId)
+                        String.format(USER_NOT_FOUND, userId)
                 ));
     }
 }

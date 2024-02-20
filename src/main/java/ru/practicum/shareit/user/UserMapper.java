@@ -1,7 +1,7 @@
 package ru.practicum.shareit.user;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.shareit.user.dto.UserDtoOut;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.dto.UserDtoIn;
 
@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class UserMapper {
 
-    public UserDtoOut toUserDto(User user) {
-        return UserDtoOut.builder()
+    public UserDto toUserDto(User user) {
+        return UserDto.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
@@ -26,14 +26,14 @@ public class UserMapper {
         return user;
     }
 
-    public List<UserDtoOut> toUsersDto(List<User> users) {
+    public List<UserDto> toUsersDto(List<User> users) {
         return users.stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
-    public UserDtoOut.BookerDto toBookerDto(Long bookerId) {
-        UserDtoOut.BookerDto bookerDto = new UserDtoOut.BookerDto();
+    public UserDto.BookerDto toBookerDto(Long bookerId) {
+        UserDto.BookerDto bookerDto = new UserDto.BookerDto();
         bookerDto.setId(bookerId);
         return bookerDto;
     }

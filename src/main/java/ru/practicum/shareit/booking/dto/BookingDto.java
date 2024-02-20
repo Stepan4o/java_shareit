@@ -1,33 +1,34 @@
 package ru.practicum.shareit.booking.dto;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import ru.practicum.shareit.booking.model.StateType;
-import ru.practicum.shareit.item.dto.ItemBookingDto;
-import ru.practicum.shareit.user.dto.UserDtoOut;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.user.dto.UserDto;
 
-import javax.validation.constraints.FutureOrPresent;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+@Data
 @Builder
-@Getter
-@Setter
 public class BookingDto {
     private Long id;
-
-    private ItemBookingDto item;
-
-    private UserDtoOut.BookerDto booker;
-
-    @NotNull
-    @FutureOrPresent(message = "Некорректно указана дата")
+    private ItemDto.ItemForBookingDto item;
+    private UserDto.BookerDto booker;
     private LocalDateTime start;
-
-    @NotNull
-    @FutureOrPresent(message = "Некорректно указана дата")
     private LocalDateTime end;
-
     private StateType status;
+
+    @Data
+    @Builder
+    public static class LastBookingDto {
+        private Long id;
+        private Long bookerId;
+    }
+
+    @Data
+    @Builder
+    public static class NextBookingDto {
+        private Long id;
+        private Long bookerId;
+    }
 }

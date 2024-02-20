@@ -1,10 +1,8 @@
 package ru.practicum.shareit.item.mapper;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.shareit.item.dto.ItemBookingDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoIn;
-import ru.practicum.shareit.item.dto.ItemDtoShort;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -32,8 +30,8 @@ public class ItemMapper {
         }
     }
 
-    public ItemDtoShort toItemDtoShort(Item item) {
-        return ItemDtoShort.builder()
+    public ItemDto.ItemDtoShort toItemDtoShort(Item item) {
+        return ItemDto.ItemDtoShort.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
@@ -56,8 +54,8 @@ public class ItemMapper {
         return item;
     }
 
-    public ItemBookingDto toItemBookingDto(Item item) {
-        return ItemBookingDto.builder()
+    public ItemDto.ItemForBookingDto toItemBookingDto(Item item) {
+        return ItemDto.ItemForBookingDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .build();

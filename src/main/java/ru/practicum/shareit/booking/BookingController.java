@@ -12,13 +12,14 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
 
+import static ru.practicum.shareit.Constants.HEADER_USER_ID;
+
 @Slf4j
 @Validated
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 public class BookingController {
-    private static final String HEADER_USER_ID = "X-Sharer-User-Id";
 
     private final BookingService service;
 
@@ -36,11 +37,11 @@ public class BookingController {
     public BookingDto updateBooking(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @PathVariable Long bookingId,
-            @RequestParam(value = "approved") boolean bool
+            @RequestParam(value = "approved") boolean isApprove
     ) {
 
-        log.debug("PATCH: /bookings/{}?approved={} | userId: {}", bookingId, bool, userId);
-        return service.update(userId, bookingId, bool);
+        log.debug("PATCH: /bookings/{}?approved={} | userId: {}", bookingId, isApprove, userId);
+        return service.update(userId, bookingId, isApprove);
     }
 
     @GetMapping("/{bookingId}")

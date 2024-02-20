@@ -9,9 +9,9 @@ import ru.practicum.shareit.request.service.ItemRequestService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
+
+import static ru.practicum.shareit.Constants.HEADER_USER_ID;
 
 
 @Validated
@@ -19,10 +19,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping(path = "/requests")
 public class ItemRequestController {
+
     private final ItemRequestService itemRequestService;
 
-    private static final String HEADER_USER_ID = "X-Sharer-User-Id";
-
+    /** Добавление пользователем запроса с описанием вещи которая нужна */
     @PostMapping
     public ItemRequestDto addNewItemRequest(
             @RequestHeader(HEADER_USER_ID) Long userId,
@@ -33,15 +33,17 @@ public class ItemRequestController {
         return itemRequestService.addNewItemRequest(itemRequestDtoIn, userId);
     }
 
-    // TODO изменить на byUserId
+    /** Получить данные по конекретному запросу вместе с данными об ответах на него */
     @GetMapping("/{requestId}")
-    public ItemRequestDto getItemRequestByOwnerId(
+    public ItemRequestDto getItemRequestById(
             @PathVariable Long requestId,
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
-        return itemRequestService.getItemRequestByOwnerId(userId, requestId);
+        return itemRequestService.getItemRequestByUserId(userId, requestId);
     }
+
+    /** Получить список всех своих запросов вместе с данными об ответах на них */
 
     @GetMapping
     public List<ItemRequestDto> getItemRequestsByOwnerId(
@@ -51,6 +53,8 @@ public class ItemRequestController {
         return itemRequestService.getItemRequestsByOwnerId(userId);
     }
 
+    /** Просмотреть список запросов созданных другими пользователями,
+     отсортированных по времени создания (от новых к старым) */
     @GetMapping("/all")
     public List<ItemRequestDto> getAllItemRequests(
             @RequestHeader(HEADER_USER_ID) Long userId,
