@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -38,17 +39,23 @@ public class ErrorHandler {
     @ExceptionHandler({
             MissingRequestHeaderException.class,
             NotAvailableException.class,
-            ConstraintViolationException.class
+            ConstraintViolationException.class,
+            MissingServletRequestParameterException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequestException(
             final Exception exception
     ) {
-        if (exception instanceof MissingRequestHeaderException) {
+        if (exception instanceof MissingServletRequestParameterException) {
+            String param = ((MissingServletRequestParameterException) exception).getParameterName();
+            return new ErrorResponse(String.format("Передан некорректный параметр : %s", param));
+
+        } else if (exception instanceof MissingRequestHeaderException) {
             log.error("Incorrect header {}", HEADER_USER_ID);
             return new ErrorResponse(String.format(
                     "Incorrect header %s", HEADER_USER_ID
             ));
+
         } else {
             log.error(exception.getMessage());
             return new ErrorResponse(exception.getMessage());

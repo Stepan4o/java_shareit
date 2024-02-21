@@ -70,12 +70,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             StateType stateType
     );
 
+    Optional<Booking> findBookingByIdAndItemUserId(Long itemId, Long userId);
+
     List<Booking> findAllByItemUserIdAndStateType(
             Long userId,
             StateType stateType,
             Pageable pageable
     );
-
 
     List<Booking> findAllByUserIdAndStateType(
             Long userId,

@@ -33,7 +33,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDto addNewItemRequest(ItemRequestDtoIn itemRequestDtoIn, Long userId) {
-        User savedUser = getUserIfExist(userId);
+        User savedUser = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException(String.format(
+                        USER_NOT_FOUND, userId
+                )));
         ItemRequest itemRequest = ItemRequestMapper.toItemRequest(itemRequestDtoIn);
         itemRequest.setUser(savedUser);
         itemRequestRepository.save(itemRequest);
@@ -54,24 +57,17 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return itemRequestDto;
     }
 
-    private void checkUser(Long userId) {
-        if (!userRepository.existsById(userId))
-            throw new NotFoundException(String.format(
-                    USER_NOT_FOUND, userId
-            ));
-    }
-
     @Override
     public List<ItemRequestDto> getItemRequestsByOwnerId(Long userId) {
         checkUser(userId);
         List<ItemRequest> itemRequests = itemRequestRepository.findAllByUserId(userId);
 
-        List<ItemRequestDto> dtoList = itemRequests.stream()
+        List<ItemRequestDto> itemRequestsDto = itemRequests.stream()
                 .map(ItemRequestMapper::toItemRequestDto)
                 .collect(Collectors.toList());
-        dtoList.forEach(this::setItemsToRequest);
+        itemRequestsDto.forEach(this::setItemsToRequest);
 
-        return dtoList;
+        return itemRequestsDto;
     }
 
     @Override
@@ -95,10 +91,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .collect(Collectors.toList()));
     }
 
-    private User getUserIfExist(Long userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException(String.format(
-                        USER_NOT_FOUND, userId
-                )));
+    private void checkUser(Long userId) {
+        if (!userRepository.existsById(userId))
+            throw new NotFoundException(String.format(
+                    USER_NOT_FOUND, userId
+            ));
     }
 }

@@ -8,4 +8,5 @@ public class Constants {
     public static final String BOOKING_NOT_FOUND = "Бронирование с id:%d не найден";
     public static final String ITEM_REQUEST_NOT_FOUND = "Запрос с id:%d не найден";
     public static final String UNKNOWN_STATE = "Unknown state: %s";
+    public static final String OWNERS_ONLY = "Внесение изменений доступно только владельцам";
 }

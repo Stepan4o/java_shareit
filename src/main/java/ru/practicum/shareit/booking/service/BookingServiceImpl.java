@@ -15,7 +15,9 @@ import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
@@ -32,7 +34,6 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
-    // TODO нужен рефакторинг (так же исправить "Не найдено")
     @Override
     public BookingDto add(BookingDtoIn bookingDtoIn, Long userId) {
         Item savedItem = itemRepository.findById(bookingDtoIn.getItemId()).orElseThrow(
@@ -40,7 +41,7 @@ public class BookingServiceImpl implements BookingService {
                         ITEM_NOT_FOUND, bookingDtoIn.getItemId()
                 )));
         if (savedItem.isAvailable()) {
-            if (!Objects.equals(savedItem.getUser().getId(), userId)) {
+            if (!isCoincidence(savedItem.getUser().getId(), userId)) {
                 User booker = userRepository.findById(userId).orElseThrow(
                         () -> new NotFoundException(String.format(
                                 USER_NOT_FOUND, userId
@@ -51,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
                 repository.save(booking);
                 return BookingMapper.toBookingDto(booking);
             } else {
-                throw new NotFoundException("Не найдено");
+                throw new NotFoundException("Невозможно забронировать свою вещь");
             }
         } else {
             throw new NotAvailableException("Вещь не доступна для бронирования");
@@ -59,27 +60,19 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto update(Long userId, Long bookingId, boolean isApprove) {
-        Booking booking = repository.findById(bookingId).orElseThrow(
+    public BookingDto update(Long userId, Long bookingId, boolean isApproved) {
+        Booking booking = repository.findBookingByIdAndItemUserId(bookingId, userId).orElseThrow(
                 () -> new NotFoundException(
                         String.format(BOOKING_NOT_FOUND, bookingId)
                 ));
-        if (Objects.equals(booking.getItem().getUser().getId(), userId)) {
-
-            if (booking.getStateType().equals(StateType.WAITING)) {
-                if (isApprove) {
-                    booking.setStateType(StateType.APPROVED);
-                } else {
-                    booking.setStateType(StateType.REJECTED);
-                }
-            } else {
-                throw new NotAvailableException("Бронирование не в статус WAITING");
-            }
-            repository.save(booking);
-            return BookingMapper.toBookingDto(booking);
+        if (booking.getStateType().equals(StateType.WAITING)) {
+            StateType status = isApproved ? StateType.APPROVED : StateType.REJECTED;
+            booking.setStateType(status);
         } else {
-            throw new NotFoundException("Информация отсутствует");
+            throw new NotAvailableException("Бронирование не ожидает подтверждения");
         }
+        repository.save(booking);
+        return BookingMapper.toBookingDto(booking);
     }
 
     @Override
@@ -89,17 +82,22 @@ public class BookingServiceImpl implements BookingService {
                 () -> new NotFoundException(
                         String.format(BOOKING_NOT_FOUND, bookingId)
                 ));
-        if (booking.getItem().getUser().getId().equals(userId) ||
-                booking.getUser().getId().equals(userId)) {
+        UserDto userDto = UserMapper.toUserDto(booking.getItem().getUser());
+        if (isCoincidence(booking.getUser().getId(), userId) || isCoincidence(userDto.getId(), userId)) {
             return BookingMapper.toBookingDto(booking);
         } else {
-            throw new NotFoundException("Информация не найдена");
+            throw new NotFoundException("Информация доступна только для участников бронирования");
         }
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByUserId(Long userId, String state, Integer from, Integer size) {
+    public List<BookingDto> getAllByUserId(
+            Long userId,
+            String state,
+            Integer from,
+            Integer size
+    ) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
                     USER_NOT_FOUND, userId
@@ -138,10 +136,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByOwnerId(Long userId,
-                                            String state,
-                                            Integer from,
-                                            Integer size) {
+    public List<BookingDto> getAllByOwnerId(
+            Long userId,
+            String state,
+            Integer from,
+            Integer size
+    ) {
 
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
@@ -178,5 +178,9 @@ public class BookingServiceImpl implements BookingService {
                 break;
         }
         return BookingMapper.toBookingsDto(bookings);
+    }
+
+    boolean isCoincidence(Long ownerId, Long userId) {
+        return Objects.equals(ownerId, userId);
     }
 }

@@ -34,14 +34,14 @@ public class BookingController {
     }
 
     @PatchMapping("/{bookingId}")
-    public BookingDto updateBooking(
+    public BookingDto approveBooking(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @PathVariable Long bookingId,
-            @RequestParam(value = "approved") boolean isApprove
+            @RequestParam(value = "approved") boolean isApproved
     ) {
 
-        log.debug("PATCH: /bookings/{}?approved={} | userId: {}", bookingId, isApprove, userId);
-        return service.update(userId, bookingId, isApprove);
+        log.debug("PATCH: /bookings/{}?approved={} | userId: {}", bookingId, isApproved, userId);
+        return service.update(userId, bookingId, isApproved);
     }
 
     @GetMapping("/{bookingId}")

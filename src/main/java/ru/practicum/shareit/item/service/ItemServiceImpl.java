@@ -29,6 +29,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
 
+import static ru.practicum.shareit.Constants.*;
+
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
@@ -49,7 +51,6 @@ public class ItemServiceImpl implements ItemService {
         if (requestId != null) {
             setRequestIfExist(newItem, requestId);
         }
-
         itemRepository.save(newItem);
         return ItemMapper.toItemDto(newItem);
     }
@@ -80,7 +81,6 @@ public class ItemServiceImpl implements ItemService {
         if (item.isPresent() && isOwner(item.get().getUser().getId(), userId)) {
             itemsDto.forEach(this::setNextAndLastBooking);
         }
-
         return itemsDto;
     }
 
@@ -100,13 +100,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentDto addComment(Long userId, CommentDtoIn commentDtoIn, Long itemId) {
-        Booking booking = bookingRepository
-                .findFirstByUserIdAndItemIdAndEndBeforeAndStateType(
-                        userId,
-                        itemId,
-                        LocalDateTime.now(),
-                        StateType.APPROVED
-                ).orElseThrow(() -> new NotAvailableException("Ошибка"));
+        Booking booking = bookingRepository.findFirstByUserIdAndItemIdAndEndBeforeAndStateType(
+                userId,
+                itemId,
+                LocalDateTime.now(),
+                StateType.APPROVED
+        ).orElseThrow(() -> new NotAvailableException("Добавление комметария невозможно"));
+
         Comment newComment = CommentMapper.toComment(commentDtoIn, booking.getUser(), booking.getItem());
         commentRepository.save(newComment);
 
@@ -123,9 +123,7 @@ public class ItemServiceImpl implements ItemService {
 
             return ItemMapper.toItemDto(updatedItem);
         } else {
-            throw new AccessDeniedException(
-                    "Внесение изменений доступно только владельцам"
-            );
+            throw new AccessDeniedException(OWNERS_ONLY);
         }
     }
 
@@ -177,29 +175,25 @@ public class ItemServiceImpl implements ItemService {
         itemDto.setComments(commentsDtoList);
     }
 
-    /**
-     * @param requestId Добавить request к item если такой существует в базе
-     *                  или же сообщить об ошибке
-     */
     private void setRequestIfExist(Item item, Long requestId) {
         Optional<ItemRequest> itemRequest = itemRequestRepository.findById(requestId);
         item.setItemRequest(itemRequest.orElseThrow(
                 () -> new NotFoundException(String.format(
-                        "ItemRequest с id:%d не найден", requestId
+                        ITEM_REQUEST_NOT_FOUND, requestId
                 ))));
     }
 
     private User getUserIfExist(Long userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException(
-                        String.format("Пользователь с id:%d не найден", userId)
+                        String.format(USER_NOT_FOUND, userId)
                 ));
     }
 
     private Item getItemIfExist(Long itemId) {
         return itemRepository.findById(itemId).orElseThrow(
                 () -> new NotFoundException(
-                        String.format("Вещь с id:%d не найдена", itemId)
+                        String.format(ITEM_NOT_FOUND, itemId)
                 ));
     }
 

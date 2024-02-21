@@ -13,7 +13,6 @@ import java.util.List;
 
 import static ru.practicum.shareit.Constants.HEADER_USER_ID;
 
-
 @Validated
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +26,6 @@ public class ItemRequestController {
     public ItemRequestDto addNewItemRequest(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @Valid @RequestBody ItemRequestDtoIn itemRequestDtoIn
-
     ) {
 
         return itemRequestService.addNewItemRequest(itemRequestDtoIn, userId);
