@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -29,7 +31,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-import static ru.practicum.shareit.Constants.*;
+import static ru.practicum.shareit.utils.Constants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -70,10 +72,14 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemDto> getAllItemsByUserId(Long userId) {
+    public List<ItemDto> getAllItemsByUserId(Long userId, Integer from, Integer size) {
         User savedUser = getUserIfExist(userId);
 
-        List<Item> itemList = itemRepository.findByUserId(savedUser.getId());
+        List<Item> itemList = itemRepository.findByUserId(
+                savedUser.getId(),
+                PageRequest.of(from/size, size)
+        );
+
         List<ItemDto> itemsDto = ItemMapper.toItemsDto(itemList);
         itemsDto.forEach(this::setComments);
 
@@ -86,13 +92,21 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemDto> getItemsBySubstring(String searchText, Long userId) {
-        if (searchText.isBlank()) {
+    public List<ItemDto> getItemsBySubstring(
+            String searchText,
+            Long userId,
+            Integer from,
+            Integer size
+    ) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException(String.format(USER_NOT_FOUND, userId));
+        } else if (searchText.isBlank()) {
             return new ArrayList<>();
         } else {
+            Pageable pageable = PageRequest.of(from / size, size);
             List<Item> itemList = itemRepository
                     .findAllByAvailableTrueAndDescriptionContainingIgnoreCaseOrNameContainingIgnoreCase(
-                            searchText, searchText
+                            searchText, searchText, pageable
                     );
             return ItemMapper.toItemsDto(itemList);
         }

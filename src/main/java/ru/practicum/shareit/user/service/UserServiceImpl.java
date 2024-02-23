@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import static ru.practicum.shareit.Constants.EMAIL_ALREADY_EXIST;
-import static ru.practicum.shareit.Constants.USER_NOT_FOUND;
+import static ru.practicum.shareit.utils.Constants.EMAIL_ALREADY_EXIST;
+import static ru.practicum.shareit.utils.Constants.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor

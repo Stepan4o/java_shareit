@@ -8,12 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoIn;
 import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.utils.Create;
+import ru.practicum.shareit.utils.Update;
 
 import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
-@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
@@ -23,7 +24,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public UserDto addNewUser(@Valid @RequestBody UserDtoIn userDtoIn) {
+    public UserDto addNewUser(@Validated(Create.class) @RequestBody UserDtoIn userDtoIn) {
 
         log.debug("POST: /users");
         return userService.add(userDtoIn);
@@ -46,7 +47,7 @@ public class UserController {
     @PatchMapping("/{id}")
     public UserDto patchUpdateUser(
             @PathVariable Long id,
-            @RequestBody UserDtoIn userDtoIn
+            @Validated(Update.class) @RequestBody UserDtoIn userDtoIn
     ) {
 
         log.debug("PATCH: /users/{}", id);

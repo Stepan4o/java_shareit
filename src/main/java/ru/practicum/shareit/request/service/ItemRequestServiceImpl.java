@@ -20,8 +20,8 @@ import ru.practicum.shareit.user.model.User;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.Constants.ITEM_REQUEST_NOT_FOUND;
-import static ru.practicum.shareit.Constants.USER_NOT_FOUND;
+import static ru.practicum.shareit.utils.Constants.ITEM_REQUEST_NOT_FOUND;
+import static ru.practicum.shareit.utils.Constants.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor

@@ -6,12 +6,13 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestDtoIn;
 import ru.practicum.shareit.request.service.ItemRequestService;
+import ru.practicum.shareit.utils.Create;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
 
-import static ru.practicum.shareit.Constants.HEADER_USER_ID;
+import static ru.practicum.shareit.utils.Constants.HEADER_USER_ID;
 
 @Validated
 @RestController
@@ -25,7 +26,7 @@ public class ItemRequestController {
     @PostMapping
     public ItemRequestDto addNewItemRequest(
             @RequestHeader(HEADER_USER_ID) Long userId,
-            @Valid @RequestBody ItemRequestDtoIn itemRequestDtoIn
+            @Validated(Create.class) @RequestBody ItemRequestDtoIn itemRequestDtoIn
     ) {
 
         return itemRequestService.addNewItemRequest(itemRequestDtoIn, userId);

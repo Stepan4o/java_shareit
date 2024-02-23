@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.validation.ConstraintViolationException;
 import java.util.Objects;
 
-import static ru.practicum.shareit.Constants.HEADER_USER_ID;
+import static ru.practicum.shareit.utils.Constants.HEADER_USER_ID;
 
 @Slf4j
 @RestControllerAdvice

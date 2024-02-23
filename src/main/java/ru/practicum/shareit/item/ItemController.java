@@ -9,11 +9,15 @@ import ru.practicum.shareit.item.dto.CommentDtoIn;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoIn;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.utils.Create;
+import ru.practicum.shareit.utils.Update;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 
-import static ru.practicum.shareit.Constants.HEADER_USER_ID;
+import static ru.practicum.shareit.utils.Constants.HEADER_USER_ID;
 
 @Slf4j
 @Validated
@@ -30,7 +34,7 @@ public class ItemController {
      */
     @PostMapping
     public ItemDto addNewItem(
-            @Valid @RequestBody ItemDtoIn itemDtoIn,
+            @Validated(Create.class) @RequestBody ItemDtoIn itemDtoIn,
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
@@ -40,7 +44,7 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(
-            @RequestBody ItemDtoIn itemDtoIn,
+            @Validated(Update.class) @RequestBody ItemDtoIn itemDtoIn,
             @RequestHeader(HEADER_USER_ID) Long userId,
             @PathVariable Long itemId
     ) {
@@ -62,11 +66,13 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDto> getItemsBySubstring(
             @RequestParam(required = false) String text,
-            @RequestHeader(HEADER_USER_ID) Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId,
+            @RequestParam(defaultValue = "0") @Min(0) Integer from,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) Integer size
     ) {
 
         log.debug("GET: /items/search?searchText={} | userId: {}", text, userId);
-        return itemService.getItemsBySubstring(text, userId);
+        return itemService.getItemsBySubstring(text, userId, from, size);
     }
 
     /** Если запрашивает владелец, вернуть с комментрариями пользователей
@@ -74,11 +80,13 @@ public class ItemController {
      */
     @GetMapping
     public List<ItemDto> getAllItemsByUserId(
-            @RequestHeader(HEADER_USER_ID) Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId,
+            @RequestParam(defaultValue = "0") @Min(0) Integer from,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) Integer size
     ) {
 
         log.debug("GET: /items | userId:{}", userId);
-        return itemService.getAllItemsByUserId(userId);
+        return itemService.getAllItemsByUserId(userId, from, size);
     }
 
     /** Комметраий можно оставить толко пользователю который брал вещь в аренду
@@ -86,7 +94,7 @@ public class ItemController {
     @PostMapping("/{itemId}/comment")
     public CommentDto addCommentToItem(
             @RequestHeader(HEADER_USER_ID) Long userId,
-            @Valid @RequestBody CommentDtoIn commentDtoIn,
+            @Validated(Create.class) @RequestBody CommentDtoIn commentDtoIn,
             @PathVariable Long itemId
     ) {
         log.debug("POST: /items/{}/comment | userId: {}", itemId, userId);

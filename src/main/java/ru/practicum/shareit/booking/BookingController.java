@@ -9,10 +9,11 @@ import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.List;
 
-import static ru.practicum.shareit.Constants.HEADER_USER_ID;
+import static ru.practicum.shareit.utils.Constants.HEADER_USER_ID;
 
 @Slf4j
 @Validated
@@ -59,7 +60,7 @@ public class BookingController {
             @RequestParam(required = false, defaultValue = "ALL") String state,
             @RequestHeader(HEADER_USER_ID) Long userId,
             @RequestParam(value = "from", defaultValue = "0") @Min(0) Integer from,
-            @RequestParam(value = "size", defaultValue = "10") @Min(1) Integer size
+            @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(20) Integer size
     ) {
 
         log.debug("GET: /bookings/owner?state={} | userId: {}", state, userId);
@@ -71,7 +72,7 @@ public class BookingController {
             @RequestParam(required = false, defaultValue = "ALL") String state,
             @RequestHeader(HEADER_USER_ID) Long userId,
             @RequestParam(value = "from", defaultValue = "0") @Min(0) Integer from,
-            @RequestParam(value = "size", defaultValue = "10") @Min(1) Integer size
+            @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(20) Integer size
     ) {
 
         log.debug("GET: /bookings?state={} | userId: {}", state, userId);

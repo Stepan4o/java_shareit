@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static ru.practicum.shareit.Constants.*;
+import static ru.practicum.shareit.utils.Constants.*;
 
 @Service
 @RequiredArgsConstructor
