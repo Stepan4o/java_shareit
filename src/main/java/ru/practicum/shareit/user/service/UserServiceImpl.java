@@ -35,9 +35,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto add(UserDtoIn userDtoIn) {
-        User newUser = UserMapper.toUser(userDtoIn);
         try {
-            repository.save(newUser);
+            User newUser = repository.save(UserMapper.toUser(userDtoIn));
             return UserMapper.toUserDto(newUser);
         } catch (DataIntegrityViolationException exception) {
             throw new AlreadyExistException(String.format(
