@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ru.practicum.shareit.utils.Create;
@@ -11,6 +12,7 @@ import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class CommentDtoIn {

@@ -33,8 +33,8 @@ public class UserMapper {
     }
 
     public UserDto.BookerDto toBookerDto(Long bookerId) {
-        UserDto.BookerDto bookerDto = new UserDto.BookerDto();
-        bookerDto.setId(bookerId);
-        return bookerDto;
+//        UserDto.BookerDto bookerDto = new UserDto.BookerDto();
+//        bookerDto.setId(bookerId);
+        return UserDto.BookerDto.builder().id(bookerId).build();
     }
 }

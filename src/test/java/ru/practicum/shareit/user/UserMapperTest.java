@@ -32,6 +32,16 @@ public class UserMapperTest {
     }
 
     @Test
+    void toUserBookerTest() {
+        UserDto.BookerDto bookerDto = UserMapper.toBookerDto(id1);
+
+        assertAll(
+                () -> assertNotNull(bookerDto),
+                () -> assertEquals(bookerDto.getId(), id1)
+        );
+    }
+
+    @Test
     void toUserTest() {
         UserDtoIn userDtoIn = new UserDtoIn();
         userDtoIn.setName(name1);
@@ -53,7 +63,7 @@ public class UserMapperTest {
         String email2 = "2email.com";
 
         List<User> userList = List.of(
-                new User(id1,name1,email1),
+                new User(id1, name1, email1),
                 new User(id2, name2, email2)
         );
 

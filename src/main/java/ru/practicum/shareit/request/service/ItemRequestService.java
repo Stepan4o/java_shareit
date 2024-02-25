@@ -8,7 +8,7 @@ import java.util.List;
 public interface ItemRequestService {
     ItemRequestDto addNewItemRequest(ItemRequestDtoIn itemRequestDtoIn, Long userId);
 
-    ItemRequestDto getItemRequestByUserId(Long userId, Long requestId);
+    ItemRequestDto getItemRequestById(Long userId, Long requestId);
 
     List<ItemRequestDto> getItemRequestsByOwnerId(Long userId);
 

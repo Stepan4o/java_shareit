@@ -5,9 +5,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,7 +37,6 @@ public class UserControllerTest {
     private final UserDto secondUser = new UserDto(2L, "Second", "Second@email.com");
     private final UserDto blankName = new UserDto(3L, "", "Second@email.com");
     private final UserDto invalidEmail = new UserDto(4L, "Second", "invalidEmail");
-
 
     @Test
     @SneakyThrows
@@ -74,11 +71,11 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(firstUser.getId()), Long.class))
-                .andExpect(jsonPath("$[0].name", is(firstUser.getName())))
-                .andExpect(jsonPath("$[0].email", is(firstUser.getEmail())))
+                .andExpect(jsonPath("$[0].name", is(firstUser.getName()), String.class))
+                .andExpect(jsonPath("$[0].email", is(firstUser.getEmail()), String.class))
                 .andExpect(jsonPath("$[1].id", is(secondUser.getId()), Long.class))
-                .andExpect(jsonPath("$[1].name", is(secondUser.getName())))
-                .andExpect(jsonPath("$[1].email", is(secondUser.getEmail())));
+                .andExpect(jsonPath("$[1].name", is(secondUser.getName()), String.class))
+                .andExpect(jsonPath("$[1].email", is(secondUser.getEmail()), String.class));
     }
 
     @Test
@@ -91,8 +88,8 @@ public class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(firstUser.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(firstUser.getName())))
-                .andExpect(jsonPath("$.email", is(firstUser.getEmail())));
+                .andExpect(jsonPath("$.name", is(firstUser.getName()), String.class))
+                .andExpect(jsonPath("$.email", is(firstUser.getEmail()), String.class));
     }
 
     @Test
@@ -107,8 +104,8 @@ public class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(firstUser.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(firstUser.getName())))
-                .andExpect(jsonPath("$.email", is(firstUser.getEmail())));
+                .andExpect(jsonPath("$.name", is(firstUser.getName()), String.class))
+                .andExpect(jsonPath("$.email", is(firstUser.getEmail()), String.class));
     }
 
     @Test
@@ -123,8 +120,8 @@ public class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(firstUser.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(firstUser.getName())))
-                .andExpect(jsonPath("$.email", is(firstUser.getEmail())));
+                .andExpect(jsonPath("$.name", is(firstUser.getName()), String.class))
+                .andExpect(jsonPath("$.email", is(firstUser.getEmail()), String.class));
     }
 
     @Test
@@ -133,6 +130,4 @@ public class UserControllerTest {
         mockMvc.perform(delete("/users/1")).andExpect(status().isOk());
         Mockito.verify(service, times(1)).deleteById(anyLong());
     }
-
-
 }

@@ -53,8 +53,7 @@ public class ItemServiceImpl implements ItemService {
         if (requestId != null) {
             setRequestIfExist(newItem, requestId);
         }
-        itemRepository.save(newItem);
-        return ItemMapper.toItemDto(newItem);
+        return ItemMapper.toItemDto(itemRepository.save(newItem));
     }
 
     @Override
@@ -77,7 +76,7 @@ public class ItemServiceImpl implements ItemService {
 
         List<Item> itemList = itemRepository.findByUserId(
                 savedUser.getId(),
-                PageRequest.of(from/size, size)
+                PageRequest.of(from / size, size)
         );
 
         List<ItemDto> itemsDto = ItemMapper.toItemsDto(itemList);
@@ -122,9 +121,8 @@ public class ItemServiceImpl implements ItemService {
         ).orElseThrow(() -> new NotAvailableException("Добавление комметария невозможно"));
 
         Comment newComment = CommentMapper.toComment(commentDtoIn, booking.getUser(), booking.getItem());
-        commentRepository.save(newComment);
 
-        return CommentMapper.toCommentDto(newComment);
+        return CommentMapper.toCommentDto(commentRepository.save(newComment));
     }
 
     @Override

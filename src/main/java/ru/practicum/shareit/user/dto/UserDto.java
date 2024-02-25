@@ -13,6 +13,7 @@ public class UserDto {
     private String email;
 
     @Data
+    @Builder
     public static class BookerDto {
         private Long id;
     }

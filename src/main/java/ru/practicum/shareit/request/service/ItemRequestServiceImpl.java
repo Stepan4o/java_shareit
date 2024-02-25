@@ -39,13 +39,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 )));
         ItemRequest itemRequest = ItemRequestMapper.toItemRequest(itemRequestDtoIn);
         itemRequest.setUser(savedUser);
-        itemRequestRepository.save(itemRequest);
 
-        return ItemRequestMapper.toItemRequestDto(itemRequest);
+        return ItemRequestMapper.toItemRequestDto(itemRequestRepository.save(itemRequest));
     }
 
     @Override
-    public ItemRequestDto getItemRequestByUserId(Long userId, Long requestId) {
+    public ItemRequestDto getItemRequestById(Long userId, Long requestId) {
         checkUser(userId);
         ItemRequest itemRequest = itemRequestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException(String.format(

@@ -49,8 +49,7 @@ public class BookingServiceImpl implements BookingService {
                 Booking booking = BookingMapper.toBooking(bookingDtoIn);
                 booking.setItem(savedItem);
                 booking.setUser(booker);
-                repository.save(booking);
-                return BookingMapper.toBookingDto(booking);
+                return BookingMapper.toBookingDto(repository.save(booking));
             } else {
                 throw new NotFoundException("Невозможно забронировать свою вещь");
             }
@@ -71,8 +70,8 @@ public class BookingServiceImpl implements BookingService {
         } else {
             throw new NotAvailableException("Бронирование не ожидает подтверждения");
         }
-        repository.save(booking);
-        return BookingMapper.toBookingDto(booking);
+
+        return BookingMapper.toBookingDto(repository.save(booking));
     }
 
     @Override

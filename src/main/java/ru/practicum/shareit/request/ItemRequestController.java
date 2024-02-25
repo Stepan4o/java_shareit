@@ -8,7 +8,6 @@ import ru.practicum.shareit.request.dto.ItemRequestDtoIn;
 import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.utils.Create;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
 
@@ -39,11 +38,10 @@ public class ItemRequestController {
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
-        return itemRequestService.getItemRequestByUserId(userId, requestId);
+        return itemRequestService.getItemRequestById(userId, requestId);
     }
 
     /** Получить список всех своих запросов вместе с данными об ответах на них */
-
     @GetMapping
     public List<ItemRequestDto> getItemRequestsByOwnerId(
             @RequestHeader(HEADER_USER_ID) Long userId
