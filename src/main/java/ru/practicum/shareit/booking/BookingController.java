@@ -63,7 +63,7 @@ public class BookingController {
             @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(20) Integer size
     ) {
 
-        log.debug("GET: /bookings/owner?state={} | userId: {}", state, userId);
+        log.debug("GET: /bookings/owner?state={}&from={}&size={} | userId: {}", state, from, size, userId);
         return service.getAllByOwnerId(userId, state, from, size);
     }
 
@@ -75,7 +75,7 @@ public class BookingController {
             @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(20) Integer size
     ) {
 
-        log.debug("GET: /bookings?state={} | userId: {}", state, userId);
+        log.debug("GET: /bookings?state={}&from={}&size={} | userId: {}", state, from, size, userId);
         return service.getAllByUserId(userId, state, from, size);
     }
 }

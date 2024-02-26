@@ -27,7 +27,8 @@ public class ItemController {
 
     private final ItemService itemService;
 
-    /** По эндпоинту два сценария. Обычное добавление вещи, или же добавление
+    /**
+     * По эндпоинту два сценария. Обычное добавление вещи, или же добавление
      * к соответсвующему запросу по requestId (указанному в теле itemDtoIn.requestId)
      * созданному другим пользователем по желаемой вещи
      */
@@ -70,12 +71,13 @@ public class ItemController {
             @RequestParam(defaultValue = "10") @Min(1) @Max(20) Integer size
     ) {
 
-        log.debug("GET: /items/search?searchText={} | userId: {}", text, userId);
+        log.debug("GET: /items/search?searchText={}&from={}&size={} | userId: {}", text, from, size, userId);
         return itemService.getItemsBySubstring(text, userId, from, size);
     }
 
-    /** Если запрашивает владелец, вернуть с комментрариями пользователей
-     *  и последними/следующими бронированиями. Иначле только с комметариями
+    /**
+     * Если запрашивает владелец, вернуть с комментрариями пользователей
+     * и последними/следующими бронированиями. Иначле только с комметариями
      */
     @GetMapping
     public List<ItemDto> getAllItemsByUserId(
@@ -84,11 +86,12 @@ public class ItemController {
             @RequestParam(defaultValue = "10") @Min(1) @Max(20) Integer size
     ) {
 
-        log.debug("GET: /items | userId:{}", userId);
+        log.debug("GET: /items?from={}&size={} | userId: {}", from, size, userId);
         return itemService.getAllItemsByUserId(userId, from, size);
     }
 
-    /** Комметраий можно оставить толко пользователю который брал вещь в аренду
+    /**
+     * Комметраий можно оставить толко пользователю который брал вещь в аренду
      */
     @PostMapping("/{itemId}/comment")
     public CommentDto addCommentToItem(

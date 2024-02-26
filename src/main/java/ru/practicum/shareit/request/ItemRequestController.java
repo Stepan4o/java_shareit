@@ -1,6 +1,7 @@
 package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
@@ -13,6 +14,7 @@ import java.util.List;
 
 import static ru.practicum.shareit.utils.Constants.HEADER_USER_ID;
 
+@Slf4j
 @Validated
 @RestController
 @RequiredArgsConstructor
@@ -21,37 +23,48 @@ public class ItemRequestController {
 
     private final ItemRequestService itemRequestService;
 
-    /** Добавление пользователем запроса с описанием вещи которая нужна */
+    /**
+     * Добавление пользователем запроса с описанием вещи которая нужна
+     */
     @PostMapping
     public ItemRequestDto addNewItemRequest(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @Validated(Create.class) @RequestBody ItemRequestDtoIn itemRequestDtoIn
     ) {
 
+        log.debug("POST: /requests | userId: {}", userId);
         return itemRequestService.addNewItemRequest(itemRequestDtoIn, userId);
     }
 
-    /** Получить данные по конекретному запросу вместе с данными об ответах на него */
+    /**
+     * Получить данные по конекретному запросу вместе с данными об ответах на него
+     */
     @GetMapping("/{requestId}")
     public ItemRequestDto getItemRequestById(
             @PathVariable Long requestId,
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
+        log.debug("GET: /requests/{} | userId: {}", requestId, userId);
         return itemRequestService.getItemRequestById(userId, requestId);
     }
 
-    /** Получить список всех своих запросов вместе с данными об ответах на них */
+    /**
+     * Получить список всех своих запросов вместе с данными об ответах на них
+     */
     @GetMapping
     public List<ItemRequestDto> getItemRequestsByOwnerId(
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
 
+        log.debug("GET: /requests | userId: {}", userId);
         return itemRequestService.getItemRequestsByOwnerId(userId);
     }
 
-    /** Просмотреть список запросов созданных другими пользователями,
-     отсортированных по времени создания (от новых к старым) */
+    /**
+     * Просмотреть список запросов созданных другими пользователями,
+     * отсортированных по времени создания (от новых к старым)
+     */
     @GetMapping("/all")
     public List<ItemRequestDto> getAllItemRequests(
             @RequestHeader(HEADER_USER_ID) Long userId,
@@ -59,6 +72,7 @@ public class ItemRequestController {
             @RequestParam(value = "size", defaultValue = "10") @Min(1) Integer size
     ) {
 
+        log.debug("GET: /requests/all?from={}&size={} | userId: {}", from, size, userId);
         return itemRequestService.getAllItemRequests(userId, from, size);
     }
 }
