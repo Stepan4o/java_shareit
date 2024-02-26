@@ -38,7 +38,7 @@ class UserServiceTest {
     private final User user = new User(id, name, email);
 
     @Test
-    void getAll() {
+    void getAll_shouldReturnListOfUser() {
         when(repository.findAll()).thenReturn(List.of(user));
 
         List<UserDto> targetUser = service.getAll();
@@ -52,7 +52,7 @@ class UserServiceTest {
     }
 
     @Test
-    void userShouldBeFoundedById() {
+    void getById_userShouldBeFoundedById() {
         when(repository.findById(id)).thenReturn(Optional.of(user));
 
         UserDto actualDto = service.getById(id);
@@ -63,7 +63,7 @@ class UserServiceTest {
     }
 
     @Test
-    void whenUserNotFoundedByIdShouldBeThrownUserNotFoundException() {
+    void getById_whenUserNotFoundedByIdShouldBeThrownNotFoundException() {
         when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
         Throwable exception = Assertions.assertThrows(
@@ -77,7 +77,7 @@ class UserServiceTest {
     }
 
     @Test
-    void userShouldBeAddedWhenNameIsValid() {
+    void add_userShouldBeAddedWhenNameIsValid() {
         when(repository.save(any())).thenReturn(user);
 
         UserDtoIn dtoForSave = new UserDtoIn();
@@ -91,7 +91,7 @@ class UserServiceTest {
     }
 
     @Test
-    void whenAddedUserHasDuplicatedEmailShouldBeThrownAlreadyExistException() {
+    void add_whenAddedUserHasDuplicatedEmailShouldBeThrownAlreadyExistException() {
         doThrow(DataIntegrityViolationException.class).when(repository).save(any(User.class));
 
         Throwable exception = assertThrows(AlreadyExistException.class, () -> service.add(userDtoIn));
@@ -103,14 +103,14 @@ class UserServiceTest {
     }
 
     @Test
-    void whenAddedUserWithInvalidNameShouldBeThrownConstraintViolationException() {
+    void add_whenAddedUserWithInvalidNameShouldBeThrownConstraintViolationException() {
         doThrow(ConstraintViolationException.class).when(repository).save(any(User.class));
 
         assertThrows(ConstraintViolationException.class, () -> service.add(userDtoIn));
     }
 
     @Test
-    void updatingUserShouldBeDoneOnlyWithAvailableFields() {
+    void updateById_updatingUserShouldBeDoneOnlyWithAvailableFields() {
         when(repository.findById(id)).thenReturn(Optional.of(user));
 
         userDtoIn.setName(nameForUpdate);
@@ -144,7 +144,7 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteById() {
+    void deleteById_shouldBeDeletedIfUserExist() {
         service.deleteById(id);
         verify(repository, times(1)).deleteById(id);
     }

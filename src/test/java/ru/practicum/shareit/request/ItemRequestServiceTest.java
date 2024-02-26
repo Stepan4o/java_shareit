@@ -56,7 +56,7 @@ public class ItemRequestServiceTest {
             .build();
 
     @Test
-    void addNewRequestShouldNotBeAddedIfUserNotFound() {
+    void addNewItemRequest_shouldNotBeAddedIfUserNotFound() {
         when(userRepository.findById(incorrectId)).thenReturn(Optional.empty());
         Throwable exception = assertThrows(
                 NotFoundException.class,
@@ -68,7 +68,7 @@ public class ItemRequestServiceTest {
     }
 
     @Test
-    void addNewRequest() {
+    void addNewItemRequest_shouldBeAddedIfFieldsIsValid() {
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
         when(itemRequestRepository.save(any())).thenReturn(request);
 
@@ -81,7 +81,7 @@ public class ItemRequestServiceTest {
     }
 
     @Test
-    void getAllItemRequests() {
+    void getAllItemRequests_shouldBeDoneIfUserWasFound() {
         when(itemRequestRepository.findAllByUserIdIsNot(
                 anyLong(), any(Pageable.class))).thenReturn(List.of(request));
         when(itemRepository
@@ -96,7 +96,7 @@ public class ItemRequestServiceTest {
     }
 
     @Test
-    void getRequestByIdWhenUserNotFoundThenThrowException() {
+    void getItemRequestById_whenUserNotFoundThenThrowException() {
         when(userRepository.existsById(incorrectId)).thenReturn(false);
 
         Throwable exception = assertThrows(
@@ -108,7 +108,7 @@ public class ItemRequestServiceTest {
     }
 
     @Test
-    void getRequestByIdWhenUserFound() {
+    void getItemRequestById_whenUserFound() {
         when(userRepository.existsById(id)).thenReturn(true);
         when(itemRequestRepository.findById(id)).thenReturn(Optional.of(request));
 
@@ -117,7 +117,7 @@ public class ItemRequestServiceTest {
     }
 
     @Test
-    void getRequestsByIdWhenOwnerByIdWasFound() {
+    void getItemRequestById_whenOwnerByIdWasFound() {
         when(userRepository.existsById(id)).thenReturn(true);
         when(itemRepository
                 .findAllByItemRequestIdOrderByItemRequestCreatedAsc(anyLong()))

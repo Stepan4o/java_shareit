@@ -68,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
             StateType status = isApproved ? StateType.APPROVED : StateType.REJECTED;
             booking.setStateType(status);
         } else {
-            throw new NotAvailableException("Бронирование не ожидает подтверждения");
+            throw new NotAvailableException(IS_NOT_WAITING);
         }
 
         return BookingMapper.toBookingDto(repository.save(booking));

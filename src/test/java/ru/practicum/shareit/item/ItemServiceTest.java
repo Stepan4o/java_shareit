@@ -118,7 +118,7 @@ public class ItemServiceTest {
             .build();
 
     @Test
-    void addItemIfUserWasFound() {
+    void add_itemShouldBEAddedIfUserWasFound() {
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
         when(itemRepository.save(any())).thenReturn(item);
@@ -129,7 +129,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void whenAddingNewItemIfUserNotFoundShouldBeThrownUserNotFoundException() {
+    void add_whenUserNotFoundShouldBeThrownUserNotFoundException() {
         when(userRepository.findById(incorrectId))
                 .thenReturn(Optional.empty());
 
@@ -141,7 +141,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void addNewItemWithIfItemRequestWasFound() {
+    void add_addingItemWithRequestIfItemRequestWasFound() {
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
         when(requestRepository.findById(id)).thenReturn(Optional.of(request));
         when(itemRepository.save(any())).thenReturn(itemWithRequest);
@@ -152,7 +152,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void newItemShouldNotAddedIfItemRequestNotFound() {
+    void add_newItemShouldNotAddedIfItemRequestNotFound() {
         ItemDtoIn itemDtoInWithRequestIncorrectId = ItemDtoIn.builder()
                 .name(name)
                 .description(description)
@@ -171,7 +171,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void getItemByIdShouldReturnItemDtoIfExist() {
+    void getItemById_shouldReturnItemDtoIfExist() {
         when(bookingRepository.findNextBookingByItemId(anyLong(), any()))
                 .thenReturn(List.of(booking));
         when(bookingRepository.findLastBookingByItemId(anyLong(), any()))
@@ -190,7 +190,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void itemShouldBeUpdatedIfFieldsIsValidAndUserIsOwner() {
+    void update_itemShouldBeUpdatedIfFieldsIsValidAndUserIsOwner() {
         ItemDtoIn itemDtoForUpdate = ItemDtoIn.builder()
                 .name("NEW NAME")
                 .description("NEW DESCRIPTION")
@@ -208,7 +208,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void shouldBeThrownAccessDeniedExceptionIfUserNotOwner() {
+    void update_shouldBeThrownAccessDeniedExceptionIfUserNotOwner() {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 
         Throwable exception = assertThrows(
@@ -221,7 +221,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void getItemByIdShouldThrowNotFoundExceptionIfNotExist() {
+    void getItemById_shouldThrowNotFoundExceptionIfNotExist() {
         when(itemRepository.findById(incorrectId))
                 .thenReturn(Optional.empty());
 
@@ -233,7 +233,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void getItemsBySubstringShouldReturnNotEmptyListIfTextNotBlank() {
+    void getItemsBySubstring_shouldReturnNotEmptyListIfTextNotBlank() {
         when(userRepository.existsById(id)).thenReturn(true);
         when(itemRepository
                 .findAllByAvailableTrueAndDescriptionContainingIgnoreCaseOrNameContainingIgnoreCase(
@@ -249,7 +249,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void getItemsBySubstringShouldReturnEmptyListIfTextIsBlank() {
+    void getItemsBySubstring_shouldReturnEmptyListIfTextIsBlank() {
         when(userRepository.existsById(id)).thenReturn(true);
         List<ItemDto> actual = itemService.getItemsBySubstring("", id, 1, 1);
 
@@ -257,7 +257,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void getItemsBySubstringShouldThrowNotFoundIfUserNotExist() {
+    void getItemsBySubstring_shouldThrowNotFoundIfUserNotExist() {
         when(userRepository.existsById(incorrectId)).thenReturn(false);
 
         Throwable exception = assertThrows(
@@ -310,7 +310,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void addingNewCommentByNotOwnerThenThrowException() {
+    void addComment_thenThrowExceptionIfUserNotOwner() {
         when(bookingRepository.findFirstByUserIdAndItemIdAndEndBeforeAndStateType(
                 anyLong(), anyLong(), any(), any())
         ).thenReturn(Optional.empty());

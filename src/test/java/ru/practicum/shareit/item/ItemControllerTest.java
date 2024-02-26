@@ -40,7 +40,7 @@ public class ItemControllerTest {
 
     @Test
     @SneakyThrows
-    void addNewItemStatusShouldBeOkIfFieldsIsValid() {
+    void addNewItem_statusShouldBeOkIfFieldsIsValid() {
         when(itemService.add(any(), anyLong())).thenReturn(itemDto);
 
         mockMvc.perform(post("/items")
@@ -58,7 +58,7 @@ public class ItemControllerTest {
 
     @Test
     @SneakyThrows
-    void getItemByIdStatusShouldBeOk() {
+    void getItemById_statusShouldBeOk() {
         when(itemService.getItemById(anyLong(), anyLong())).thenReturn(itemDto);
 
         mockMvc.perform(get("/items/1")
@@ -76,7 +76,7 @@ public class ItemControllerTest {
 
     @Test
     @SneakyThrows
-    void statusShouldBeBadRequestIfNameIsBlank() {
+    void addNewItem_statusShouldBeBadRequestIfNameIsBlank() {
         ItemDto itemBlankName = ItemDto.builder()
                 .name("")
                 .description("itemDescription")
@@ -94,7 +94,7 @@ public class ItemControllerTest {
 
     @Test
     @SneakyThrows
-    void statusShouldBeBadRequestIfDescriptionIsBlank() {
+    void addNewItem_statusShouldBeBadRequestIfDescriptionIsBlank() {
         ItemDto itemBlankDescription = ItemDto.builder()
                 .name("itemName")
                 .description("")
@@ -112,7 +112,7 @@ public class ItemControllerTest {
 
     @Test
     @SneakyThrows
-    void itemShouldBeUpdatedWithValidFieldsAndStatusOk() {
+    void updateItem_shouldBeUpdatedWithValidFieldsAndStatusOk() {
         when(itemService.update(any(), anyLong(), anyLong())).thenReturn(itemDto);
 
         mockMvc.perform(patch("/items/1")
@@ -130,7 +130,7 @@ public class ItemControllerTest {
 
     @Test
     @SneakyThrows
-    void getAllItemsByUserIdStatusShouldBeOk() {
+    void ggetAllItemsByUserId_statusShouldBeOk() {
         when(itemService.getAllItemsByUserId(anyLong(), anyInt(), anyInt())).thenReturn(List.of(itemDto));
 
         mockMvc.perform(get("/items")
@@ -144,7 +144,7 @@ public class ItemControllerTest {
 
     @Test
     @SneakyThrows
-    void getItemsBySubstringShouldReturnNotEmptyListWithNotBlankText() {
+    void getItemsBySubstring_shouldReturnNotEmptyListWithNotBlankText() {
         when(itemService.getItemsBySubstring(anyString(), anyLong(), anyInt(), anyInt())).thenReturn(List.of(itemDto));
 
         mockMvc.perform(get("/items/search?text=item&from=0&size=1")
@@ -158,7 +158,7 @@ public class ItemControllerTest {
 
     @Test
     @SneakyThrows
-    void shouldReturnEmptyListWithBlankText() {
+    void getItemsBySubstring_shouldReturnEmptyListWithBlankText() {
         when(itemService.getItemsBySubstring(anyString(), anyLong(), anyInt(), anyInt())).thenReturn(List.of());
 
         mockMvc.perform(get("/items/search?text=&from=0&size=1")
@@ -172,7 +172,7 @@ public class ItemControllerTest {
 
     @Test
     @SneakyThrows
-    void addCommentToItemStatusShouldBeOkIfFieldsIsValid() {
+    void addCommentToItem_statusShouldBeOkIfFieldsIsValid() {
         CommentDto commentDto = CommentDto.builder()
                 .id(1L)
                 .text("comment")
@@ -194,7 +194,7 @@ public class ItemControllerTest {
 
     @Test
     @SneakyThrows
-    void statusShouldBeBadRequestIfCommentTextIsBlank() {
+    void addCommentToItem_statusShouldBeBadRequestIfCommentTextIsBlank() {
         CommentDto commentDtoEmptyText = CommentDto.builder()
                 .id(1L)
                 .text("")

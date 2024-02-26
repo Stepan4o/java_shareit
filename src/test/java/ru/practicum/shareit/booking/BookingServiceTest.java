@@ -66,7 +66,7 @@ public class BookingServiceTest {
             .build();
 
     @Test
-    void addNewBookingWithValidFields() {
+    void add_newBookingWithValidFieldsStatusIsOk() {
         when(itemRepository.findById(id)).thenReturn(Optional.of(item));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(secondUser));
         when(bookingRepository.save(any())).thenReturn(booking);
@@ -79,7 +79,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void addNewBookingShouldThrowExceptionIfBookerIsOwner() {
+    void add_newBookingShouldThrowExceptionIfBookerIsOwner() {
         when(itemRepository.findById(id)).thenReturn(Optional.of(item));
 
         Throwable exception = assertThrows(
@@ -95,7 +95,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void addNewBookingShouldThrowExceptionIfTimeInvalid() {
+    void add_newBookingShouldThrowExceptionIfTimeInvalid() {
         BookingDtoIn bookingDtoInInvalidTime = BookingDtoIn.builder()
                 .itemId(id)
                 .start(LocalDateTime.now().plusHours(3))
@@ -117,7 +117,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void addNewBookingShouldThrowExceptionIfBookerWasNotFound() {
+    void add_newBookingShouldThrowExceptionIfBookerWasNotFound() {
         when(itemRepository.findById(id)).thenReturn(Optional.of(item));
         when(userRepository.findById(100L)).thenReturn(Optional.empty());
 
@@ -134,7 +134,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void addNewBookingShouldThrowExceptionIfItemNotAvailable() {
+    void add_newBookingShouldThrowExceptionIfItemNotAvailable() {
         Item itemNotAvailable = Item.builder()
                 .id(id)
                 .name("name")
@@ -157,7 +157,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void addNewBookingShouldThrowExceptionIfItemNotFound() {
+    void add_newBookingShouldThrowExceptionIfItemNotFound() {
         BookingDtoIn bookingDtoInWIthItemNotFOund = BookingDtoIn.builder()
                 .itemId(incorrectId)
                 .start(LocalDateTime.now().plusHours(1))
@@ -178,7 +178,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void updateBookingThrowExceptionIfNotFound() {
+    void update_throwExceptionIfNotFound() {
         when(bookingRepository.findBookingByIdAndItemUserId(anyLong(), anyLong()))
                 .thenReturn(Optional.empty());
 
@@ -195,7 +195,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void updateBookingThrowExceptionIfStatusNotWaiting() {
+    void update_throwExceptionIfStatusNotWaiting() {
         Booking bookingNotWaiting = Booking.builder()
                 .id(id)
                 .start(LocalDateTime.now().plusHours(1))
@@ -213,14 +213,14 @@ public class BookingServiceTest {
         assertAll(
                 () -> assertNotNull(exception),
                 () -> assertEquals(
-                        "Бронирование не ожидает подтверждения",
+                        IS_NOT_WAITING,
                         exception.getMessage()
                 )
         );
     }
 
     @Test
-    void updateBookingIfAllFieldsIsValid() {
+    void update_shouldBeDoneIfAllFieldsIsValid() {
         Booking bookingApproved = Booking.builder()
                 .id(id)
                 .start(LocalDateTime.now().plusHours(1))
@@ -242,7 +242,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getBookingByIdShouldThrowExceptionIfNotFound() {
+    void getById_shouldThrowExceptionIfNotFound() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         Throwable exception = assertThrows(
@@ -258,7 +258,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getBookingByIdShouldThrowExceptionIfIncorrectUserId() {
+    void getById_shouldThrowExceptionIfIncorrectUserId() {
         Item itemWithOtherUser = Item.builder()
                 .id(id)
                 .name("name")
@@ -291,7 +291,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getBookingById() {
+    void getById() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
 
         BookingDto actual = bookingService.getById(id, id);
@@ -302,7 +302,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByUserIdStateAll() {
+    void getAllByUserId_stateAll() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllByUserIdOrderByStartDesc(
                 anyLong(), any(Pageable.class))).thenReturn(List.of(booking));
@@ -312,7 +312,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByUserIdStateFuture() {
+    void getAllByUserId_stateFuture() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllFutureByUserId(
                 anyLong(), any(Pageable.class))).thenReturn(List.of(booking));
@@ -322,7 +322,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByUserIdStateCurrent() {
+    void getAllByUserId_stateCurrent() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllCurrentByUserId(
                 anyLong(), any(Pageable.class))).thenReturn(List.of(booking));
@@ -332,7 +332,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByUserIdStatePast() {
+    void getAllByUserId_statePast() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllPastByUserId(
                 anyLong(), any(Pageable.class))).thenReturn(List.of(booking));
@@ -342,7 +342,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByUserIdStateWaiting() {
+    void getAllByUserId_stateWaiting() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllByUserIdAndStateType(
                 anyLong(), any(StateType.class), any(Pageable.class))).thenReturn(List.of(booking));
@@ -352,7 +352,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByUserIdStateRejected() {
+    void getAllByUserId_stateRejected() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllByUserIdAndStateType(
                 anyLong(), any(StateType.class), any(Pageable.class))).thenReturn(List.of(booking));
@@ -362,7 +362,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByUserIdThrowExceptionIfUserNotFound() {
+    void getAllByUserId_shouldThrownExceptionIfUserNotFound() {
         when(userRepository.existsById(anyLong())).thenReturn(false);
 
         Throwable exception = assertThrows(
@@ -378,7 +378,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByUserIdThrowExceptionIfUnknownState() {
+    void getAllByUserId_shouldThrownExceptionIfUnknownState() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
 
         Throwable exception = assertThrows(
@@ -394,7 +394,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByOwnerIdStateAll() {
+    void getAllByOwnerId_stateAll() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllByItemUserIdOrderByStartDesc(
                 anyLong(), any(Pageable.class))).thenReturn(List.of(booking));
@@ -404,7 +404,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByOwnerIdStateFuture() {
+    void getAllByOwnerId_stateFuture() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllFutureByOwnerId(
                 anyLong(), any(Pageable.class))).thenReturn(List.of(booking));
@@ -414,7 +414,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByOwnerIdStateCurrent() {
+    void getAllByOwnerId_stateCurrent() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllCurrentByOwnerId(
                 anyLong(), any(Pageable.class))).thenReturn(List.of(booking));
@@ -424,7 +424,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByOwnerIdStatePast() {
+    void getAllByOwnerId_statePast() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllPastByOwnerId(
                 anyLong(), any(Pageable.class))).thenReturn(List.of(booking));
@@ -434,7 +434,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByOwnerIdStateWaiting() {
+    void getAllByOwnerId_stateWaiting() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllByItemUserIdAndStateType(
                 anyLong(), any(StateType.class), any(Pageable.class))).thenReturn(List.of(booking));
@@ -444,7 +444,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByOwnerIdStateRejected() {
+    void getAllByOwnerId_stateRejected() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(bookingRepository.findAllByItemUserIdAndStateType(
                 anyLong(), any(StateType.class), any(Pageable.class))).thenReturn(List.of(booking));
@@ -454,7 +454,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByOwnerIdThrowExceptionIfUserNotFound() {
+    void getAllByOwnerId_shouldThrowExceptionIfUserNotFound() {
         when(userRepository.existsById(anyLong())).thenReturn(false);
 
         Throwable exception = assertThrows(
@@ -470,7 +470,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsByOwnerIdThrowExceptionIfUnknownState() {
+    void getAllByOwnerId_shouldThrowExceptionIfUnknownState() {
         when(userRepository.existsById(anyLong())).thenReturn(true);
 
         Throwable exception = assertThrows(

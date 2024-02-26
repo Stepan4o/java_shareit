@@ -40,7 +40,7 @@ public class UserControllerTest {
 
     @Test
     @SneakyThrows
-    void statusShouldBeBadRequestWhenTryToSaveInvalidEmail() {
+    void addNewUser_statusShouldBeBadRequestWhenTryToSaveInvalidEmail() {
         mockMvc.perform(post("/users")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(objectMapper.writeValueAsString(invalidEmail))
@@ -51,7 +51,7 @@ public class UserControllerTest {
 
     @Test
     @SneakyThrows
-    void statusShouldBeBadRequestWhenTryToSaveInvalidName() {
+    void addNewUser_statusShouldBeBadRequestWhenTryToSaveInvalidName() {
         mockMvc.perform(post("/users")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(objectMapper.writeValueAsString(blankName))
@@ -62,7 +62,7 @@ public class UserControllerTest {
 
     @Test
     @SneakyThrows
-    void getAllUsers() {
+    void getAllUsers_statusOk() {
         when(service.getAll()).thenReturn(List.of(firstUser, secondUser));
 
         mockMvc.perform(get("/users")
@@ -80,7 +80,7 @@ public class UserControllerTest {
 
     @Test
     @SneakyThrows
-    void getUserById() {
+    void getUserById_statusOk() {
         when(service.getById(anyLong())).thenReturn(firstUser);
 
         mockMvc.perform(get("/users/1", firstUser.getId())
@@ -94,7 +94,7 @@ public class UserControllerTest {
 
     @Test
     @SneakyThrows
-    void addNewUser() {
+    void addNewUser_statusOkIfFieldsIsValid() {
         when(service.add(any())).thenReturn(firstUser);
 
         mockMvc.perform(post("/users")
@@ -110,7 +110,7 @@ public class UserControllerTest {
 
     @Test
     @SneakyThrows
-    void patchUpdateUser() {
+    void patchUpdateUser_statusOk() {
         when(service.updateById(any(), anyLong())).thenReturn(firstUser);
 
         mockMvc.perform(patch("/users/1", firstUser.getId())
@@ -126,7 +126,7 @@ public class UserControllerTest {
 
     @Test
     @SneakyThrows
-    void deleteUserById() {
+    void deleteUserById_statusOk() {
         mockMvc.perform(delete("/users/1")).andExpect(status().isOk());
         Mockito.verify(service, times(1)).deleteById(anyLong());
     }

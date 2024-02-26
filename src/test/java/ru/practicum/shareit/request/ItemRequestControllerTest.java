@@ -43,7 +43,7 @@ public class ItemRequestControllerTest {
 
     @Test
     @SneakyThrows
-    void addNewRequestStatusOk() {
+    void addNewItemRequest_statusOk() {
         when(service.addNewItemRequest(any(), anyLong())).thenReturn(itemRequestDto);
 
         mockMvc.perform(post("/requests")
@@ -64,7 +64,7 @@ public class ItemRequestControllerTest {
 
     @Test
     @SneakyThrows
-    void getRequestsByOwnerIdStatusOk() {
+    void getItemRequestsByOwnerId_statusOk() {
         when(service.getItemRequestsByOwnerId(anyLong())).thenReturn(List.of(itemRequestDto));
 
         mockMvc.perform(get("/requests")
@@ -79,7 +79,7 @@ public class ItemRequestControllerTest {
 
     @Test
     @SneakyThrows
-    void getRequestByIdStatusOk() {
+    void getItemRequestById_statusOk() {
         when(service.getItemRequestById(anyLong(), anyLong())).thenReturn(itemRequestDto);
 
         mockMvc.perform(get("/requests/1")
@@ -94,7 +94,7 @@ public class ItemRequestControllerTest {
 
     @Test
     @SneakyThrows
-    void getAllRequestsInvalidParameterFromStatusBadRequest() {
+    void getAllItemRequests_invalidParameterFromStatusBadRequest() {
         mockMvc.perform(get("/requests/all?from=-1&size=1")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -105,7 +105,7 @@ public class ItemRequestControllerTest {
 
     @Test
     @SneakyThrows
-    void getAllRequestsInvalidParameterSizeStatusBadRequest() {
+    void getAllItemRequests_invalidParameterSizeStatusBadRequest() {
         mockMvc.perform(get("/requests/all?from=1&size=-1")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -116,7 +116,7 @@ public class ItemRequestControllerTest {
 
     @Test
     @SneakyThrows
-    void getAllRequestsStatusOk() {
+    void getAllItemRequests_statusOk() {
         when(service.getAllItemRequests(anyLong(), anyInt(), anyInt())).thenReturn(List.of(itemRequestDto));
 
         mockMvc.perform(get("/requests/all")

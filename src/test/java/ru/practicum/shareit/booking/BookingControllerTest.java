@@ -58,7 +58,7 @@ public class BookingControllerTest {
 
     @Test
     @SneakyThrows
-    void addNewBookingStatusShouldBeOkWithValidFields() {
+    void addNewBooking_statusShouldBeOkWithValidFields() {
         when(bookingService.add(any(), anyLong())).thenReturn(bookingDto);
 
         mockMvc.perform(post("/bookings")
@@ -73,7 +73,7 @@ public class BookingControllerTest {
 
     @Test
     @SneakyThrows
-    void addNewBookingShouldBeStatusBadRequestWithStartInPast() {
+    void addNewBooking_shouldBeStatusBadRequestWithStartInPast() {
         mockMvc.perform(post("/bookings")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -85,7 +85,7 @@ public class BookingControllerTest {
 
     @Test
     @SneakyThrows
-    void addNewBookingShouldBeStatusBadRequestWithNullStart() {
+    void addNewBooking_shouldBeStatusBadRequestWithNullStart() {
         mockMvc.perform(post("/bookings")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -97,7 +97,7 @@ public class BookingControllerTest {
 
     @Test
     @SneakyThrows
-    void getBookingByIdStatusShouldBeOk() {
+    void getBooking_statusShouldBeOk() {
         when(bookingService.getById(anyLong(), anyLong())).thenReturn(bookingDto);
 
         mockMvc.perform(get("/bookings/1")
@@ -111,7 +111,7 @@ public class BookingControllerTest {
 
     @Test
     @SneakyThrows
-    void approveBookingStatusShouldBeOk() {
+    void approveBooking_statusShouldBeOk() {
         when(bookingService.update(anyLong(), anyLong(), anyBoolean())).thenReturn(bookingDto);
 
         mockMvc.perform(patch("/bookings/1?approved=true")
@@ -126,7 +126,7 @@ public class BookingControllerTest {
 
     @Test
     @SneakyThrows
-    void getAllBookingsByOwnerIdStatusShouldBeOk() {
+    void getAllByOwnerId_statusShouldBeOk() {
         when(bookingService.getAllByOwnerId(anyLong(), anyString(), anyInt(), anyInt())).thenReturn(List.of(bookingDto));
 
         mockMvc.perform(get("/bookings/owner?state=ALL")
@@ -141,7 +141,7 @@ public class BookingControllerTest {
 
     @Test
     @SneakyThrows
-    void getAllBookingsByUserIdStatusShouldBeOk() {
+    void gelAllByUserId_statusShouldBeOk() {
         when(bookingService.getAllByUserId(anyLong(), anyString(), anyInt(), anyInt())).thenReturn(List.of(bookingDto));
 
 
