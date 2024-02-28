@@ -34,7 +34,7 @@ class UserServiceTest {
     private final long id = 1L, notFoundId = 2L;
     private final String name = "TestName", nameForUpdate = "UpdatedName";
     private final String email = "Test@email.com", emailForUpdate = "Updated@email.com";
-    private final UserDtoIn userDtoIn = new UserDtoIn(id, name, email);
+    private final UserDtoIn userDtoIn = UserDtoIn.builder().id(id).name(name).email(email).build();
     private final User user = new User(id, name, email);
 
     @Test
@@ -80,9 +80,10 @@ class UserServiceTest {
     void add_userShouldBeAddedWhenNameIsValid() {
         when(repository.save(any())).thenReturn(user);
 
-        UserDtoIn dtoForSave = new UserDtoIn();
-        dtoForSave.setName(name);
-        dtoForSave.setEmail(email);
+        UserDtoIn dtoForSave = UserDtoIn.builder()
+                .name(name)
+                .email(email)
+                .build();
 
         UserDto actualDto = service.add(dtoForSave);
 

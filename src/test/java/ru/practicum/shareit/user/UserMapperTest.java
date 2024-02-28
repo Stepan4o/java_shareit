@@ -43,9 +43,10 @@ public class UserMapperTest {
 
     @Test
     void toUserTest() {
-        UserDtoIn userDtoIn = new UserDtoIn();
-        userDtoIn.setName(name1);
-        userDtoIn.setEmail(email1);
+        UserDtoIn userDtoIn = UserDtoIn.builder()
+                .name(name1)
+                .email(email1)
+                .build();
 
         User user = UserMapper.toUser(userDtoIn);
         user.setId(id1);

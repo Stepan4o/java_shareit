@@ -158,7 +158,7 @@ public class BookingServiceTest {
 
     @Test
     void add_newBookingShouldThrowExceptionIfItemNotFound() {
-        BookingDtoIn bookingDtoInWIthItemNotFOund = BookingDtoIn.builder()
+        BookingDtoIn bookingDtoInWIthItemNotFound = BookingDtoIn.builder()
                 .itemId(incorrectId)
                 .start(LocalDateTime.now().plusHours(1))
                 .end(LocalDateTime.now().plusHours(2))
@@ -167,7 +167,7 @@ public class BookingServiceTest {
 
         Throwable exception = assertThrows(
                 NotFoundException.class,
-                () -> bookingService.add(bookingDtoInWIthItemNotFOund, id));
+                () -> bookingService.add(bookingDtoInWIthItemNotFound, id));
         assertAll(
                 () -> assertNotNull(exception),
                 () -> assertEquals(
@@ -214,6 +214,23 @@ public class BookingServiceTest {
                 () -> assertNotNull(exception),
                 () -> assertEquals(
                         IS_NOT_WAITING,
+                        exception.getMessage()
+                )
+        );
+    }
+
+    @Test
+    void update_whenUpdatingNotOwner_thenThrowNotFoundException() {
+        when(bookingRepository.findBookingByIdAndItemUserId(anyLong(), anyLong()))
+                .thenReturn(Optional.empty());
+
+        Throwable exception = assertThrows(
+                NotFoundException.class,
+                () -> bookingService.update(incorrectId, id, true));
+        assertAll(
+                () -> assertNotNull(exception),
+                () -> assertEquals(
+                        String.format(BOOKING_NOT_FOUND, id),
                         exception.getMessage()
                 )
         );

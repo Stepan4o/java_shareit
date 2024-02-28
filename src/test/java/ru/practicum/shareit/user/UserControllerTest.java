@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserDtoIn;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.nio.charset.StandardCharsets;
@@ -17,9 +18,9 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,14 +34,16 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private final UserDto firstUser = new UserDto(1L, "First", "Firstl@email.com");
+    private final Long userId = 1L;
+    private final UserDtoIn userIn = UserDtoIn.builder().id(userId).name("First").email("Firstl@email.com").build();
+    private final UserDto firstUser = new UserDto(userId, "First", "Firstl@email.com");
     private final UserDto secondUser = new UserDto(2L, "Second", "Second@email.com");
     private final UserDto blankName = new UserDto(3L, "", "Second@email.com");
     private final UserDto invalidEmail = new UserDto(4L, "Second", "invalidEmail");
 
     @Test
     @SneakyThrows
-    void addNewUser_statusShouldBeBadRequestWhenTryToSaveInvalidEmail() {
+    void addNewUser_whenTryToSaveInvalidEmail_statusShouldBeBadRequest() {
         mockMvc.perform(post("/users")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(objectMapper.writeValueAsString(invalidEmail))
@@ -51,7 +54,7 @@ public class UserControllerTest {
 
     @Test
     @SneakyThrows
-    void addNewUser_statusShouldBeBadRequestWhenTryToSaveInvalidName() {
+    void addNewUser_whenTryToSaveInvalidName_statusShouldBeBadRequest() {
         mockMvc.perform(post("/users")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(objectMapper.writeValueAsString(blankName))
@@ -81,31 +84,41 @@ public class UserControllerTest {
     @Test
     @SneakyThrows
     void getUserById_statusOk() {
-        when(service.getById(anyLong())).thenReturn(firstUser);
+        when(service.getById(userId)).thenReturn(firstUser);
 
-        mockMvc.perform(get("/users/1", firstUser.getId())
+        String actual = mockMvc.perform(get("/users/{userId}", userId)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(firstUser.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(firstUser.getName()), String.class))
-                .andExpect(jsonPath("$.email", is(firstUser.getEmail()), String.class));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+
+        assertNotNull(actual);
+        assertEquals(objectMapper.writeValueAsString(firstUser), actual);
+        verify(service).getById(firstUser.getId());
     }
 
     @Test
     @SneakyThrows
-    void addNewUser_statusOkIfFieldsIsValid() {
-        when(service.add(any())).thenReturn(firstUser);
+    void addNewUser_whenFieldsIsValid_thenStatusOk() {
+        when(service.add(userIn)).thenReturn(firstUser);
 
-        mockMvc.perform(post("/users")
+        String actual = mockMvc.perform(post("/users")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(objectMapper.writeValueAsString(firstUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(firstUser.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(firstUser.getName()), String.class))
-                .andExpect(jsonPath("$.email", is(firstUser.getEmail()), String.class));
+                .andReturn()
+                .getRequest()
+                .getContentAsString();
+
+        assertNotNull(actual);
+        assertEquals(objectMapper.writeValueAsString(firstUser), actual);
+        verify(service).add(userIn);
+
     }
 
     @Test
@@ -113,21 +126,32 @@ public class UserControllerTest {
     void patchUpdateUser_statusOk() {
         when(service.updateById(any(), anyLong())).thenReturn(firstUser);
 
-        mockMvc.perform(patch("/users/1", firstUser.getId())
+        mockMvc.perform(patch("/users/{userId}", firstUser.getId())
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(objectMapper.writeValueAsString(firstUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(firstUser.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(firstUser.getName()), String.class))
-                .andExpect(jsonPath("$.email", is(firstUser.getEmail()), String.class));
+                .andReturn()
+                .getRequest()
+                .getContentAsString();
+
+        verify(service).updateById(any(), anyLong());
     }
 
     @Test
     @SneakyThrows
     void deleteUserById_statusOk() {
-        mockMvc.perform(delete("/users/1")).andExpect(status().isOk());
+        mockMvc.perform(delete("/users/{userId}", userId)).andExpect(status().isOk());
+
         Mockito.verify(service, times(1)).deleteById(anyLong());
+    }
+
+    @Test
+    @SneakyThrows
+    void deleteUserById_whenUserNotExist_thenStatusBadRequestAndMethodIsNotInvoked() {
+        mockMvc.perform(delete("/users/")).andExpect(status().isMethodNotAllowed());
+
+        Mockito.verify(service, never()).deleteById(anyLong());
     }
 }
