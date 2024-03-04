@@ -1,10 +1,9 @@
 package ru.practicum.shareit.user;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.shareit.user.model.UserBookerDto;
-import ru.practicum.shareit.user.model.UserDto;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.model.UserDtoIn;
+import ru.practicum.shareit.user.dto.UserDtoIn;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,9 +32,7 @@ public class UserMapper {
                 .collect(Collectors.toList());
     }
 
-    public UserBookerDto toBookerDto(Long bookerId) {
-        return UserBookerDto.builder()
-                .id(bookerId)
-                .build();
+    public UserDto.BookerDto toBookerDto(Long bookerId) {
+        return UserDto.BookerDto.builder().id(bookerId).build();
     }
 }

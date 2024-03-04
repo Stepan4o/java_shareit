@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -10,6 +10,9 @@ import javax.persistence.*;
 @Table(name = "items")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,12 +22,16 @@ public class Item {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "description", nullable = false)
+    @Column(nullable = false)
     private String description;
 
-    @Column(name = "available", nullable = false)
+    @Column(nullable = false)
     private boolean available;
+
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    private ItemRequest itemRequest;
 }

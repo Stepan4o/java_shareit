@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -13,12 +15,16 @@ import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static ru.practicum.shareit.utils.Constants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,56 +36,42 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto add(BookingDtoIn bookingDtoIn, Long userId) {
-        Item item = itemRepository.findById(bookingDtoIn.getItemId()).orElseThrow(
+        Item savedItem = itemRepository.findById(bookingDtoIn.getItemId()).orElseThrow(
                 () -> new NotFoundException(String.format(
-                        "Вещь с id:%d не найдена", bookingDtoIn.getItemId()
+                        ITEM_NOT_FOUND, bookingDtoIn.getItemId()
                 )));
-        if (item.isAvailable()) {
-            if (!Objects.equals(item.getUser().getId(), userId)) {
+        if (savedItem.isAvailable()) {
+            if (!isCoincidence(savedItem.getUser().getId(), userId)) {
                 User booker = userRepository.findById(userId).orElseThrow(
                         () -> new NotFoundException(String.format(
-                                "Пользователь с id:%d не найден", userId
+                                USER_NOT_FOUND, userId
                         )));
                 Booking booking = BookingMapper.toBooking(bookingDtoIn);
-                booking.setItem(item);
+                booking.setItem(savedItem);
                 booking.setUser(booker);
-                repository.save(booking);
-                return BookingMapper.toBookingDto(booking);
+                return BookingMapper.toBookingDto(repository.save(booking));
             } else {
-                throw new NotFoundException("Не найдено");
+                throw new NotFoundException("Невозможно забронировать свою вещь");
             }
         } else {
             throw new NotAvailableException("Вещь не доступна для бронирования");
         }
     }
 
-    /**
-     * @param bool переменная для подтверждения/отказа в бронировании.
-     *             Метод работает только от владельца
-     *             и с актуальным статусом брони WAITING
-     */
     @Override
-    public BookingDto patchUpdate(Long userId, Long bookingId, boolean bool) {
-        Booking booking = repository.findById(bookingId).orElseThrow(
+    public BookingDto update(Long userId, Long bookingId, boolean isApproved) {
+        Booking booking = repository.findBookingByIdAndItemUserId(bookingId, userId).orElseThrow(
                 () -> new NotFoundException(
-                        String.format("Booking с id:%d не найден", bookingId)
+                        String.format(BOOKING_NOT_FOUND, bookingId)
                 ));
-        if (Objects.equals(booking.getItem().getUser().getId(), userId)) {
-
-            if (booking.getStateType().equals(StateType.WAITING)) {
-                if (bool) {
-                    booking.setStateType(StateType.APPROVED);
-                } else {
-                    booking.setStateType(StateType.REJECTED);
-                }
-            } else {
-                throw new NotAvailableException("Бронирование не в статус WAITING");
-            }
-            repository.save(booking);
-            return BookingMapper.toBookingDto(booking);
+        if (booking.getStateType().equals(StateType.WAITING)) {
+            StateType status = isApproved ? StateType.APPROVED : StateType.REJECTED;
+            booking.setStateType(status);
         } else {
-            throw new NotFoundException("Информация отсутствует");
+            throw new NotAvailableException(IS_NOT_WAITING);
         }
+
+        return BookingMapper.toBookingDto(repository.save(booking));
     }
 
     @Override
@@ -87,89 +79,107 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto getById(Long bookingId, Long userId) {
         Booking booking = repository.findById(bookingId).orElseThrow(
                 () -> new NotFoundException(
-                        String.format("Booking с id:%d не найден", bookingId)
+                        String.format(BOOKING_NOT_FOUND, bookingId)
                 ));
-        if (booking.getItem().getUser().getId().equals(userId) ||
-                booking.getUser().getId().equals(userId)) {
+        UserDto userDto = UserMapper.toUserDto(booking.getItem().getUser());
+        if (isCoincidence(booking.getUser().getId(), userId) || isCoincidence(userDto.getId(), userId)) {
             return BookingMapper.toBookingDto(booking);
         } else {
-            throw new NotFoundException("Информация не найдена");
+            throw new NotFoundException("Информация доступна только для участников бронирования");
         }
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByUserId(Long userId, String state) {
+    public List<BookingDto> getAllByUserId(
+            Long userId,
+            String state,
+            Integer from,
+            Integer size
+    ) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
-                    "Пользователь id:%d не найден", userId
+                    USER_NOT_FOUND, userId
             ));
         }
         List<Booking> bookings = new ArrayList<>();
+        Pageable pageable = PageRequest.of(from / size, size);
 
         StateType type = StateType.fromString(state).orElseThrow(
                 () -> new NotAvailableException(String.format(
-                        "Unknown state: %s", state
+                        UNKNOWN_STATE, state
                 )));
         switch (type) {
             case ALL:
-                bookings = repository.findAllByUserIdOrderByStartDesc(userId);
+                bookings = repository.findAllByUserIdOrderByStartDesc(userId, pageable);
                 break;
             case FUTURE:
-                bookings = repository.findAllFutureByUserId(userId);
+                bookings = repository.findAllFutureByUserId(userId, pageable);
                 break;
             case CURRENT:
-                bookings = repository.findAllCurrentByUserId(userId);
+                bookings = repository.findAllCurrentByUserId(userId, pageable);
                 break;
             case PAST:
-                bookings = repository.findAllPastByUserId(userId);
+                bookings = repository.findAllPastByUserId(userId, pageable);
                 break;
             case WAITING:
-                bookings = repository.findAllByUserIdAndStateType(userId, StateType.WAITING);
+                bookings = repository.findAllByUserIdAndStateType(userId, StateType.WAITING, pageable);
                 break;
             case REJECTED:
-                bookings = repository.findAllByUserIdAndStateType(userId, StateType.REJECTED);
+                bookings = repository.findAllByUserIdAndStateType(userId, StateType.REJECTED, pageable);
                 break;
         }
+
         return BookingMapper.toBookingsDto(bookings);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByOwnerId(Long userId, String state) {
+    public List<BookingDto> getAllByOwnerId(
+            Long userId,
+            String state,
+            Integer from,
+            Integer size
+    ) {
+
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format(
-                    "Пользователь id:%d не найден", userId
+                    USER_NOT_FOUND, userId
             ));
         }
         List<Booking> bookings = new ArrayList<>();
+        Pageable pageable = PageRequest.of(from / size, size);
 
         StateType type = StateType.fromString(state).orElseThrow(
                 () -> new NotAvailableException(String.format(
-                        "Unknown state: %s", state
+                        UNKNOWN_STATE, state
                 )));
         switch (type) {
             case ALL:
-                bookings = repository.findAllByItemUserIdOrderByStartDesc(userId);
+                bookings = repository.findAllByItemUserIdOrderByStartDesc(userId, pageable);
                 break;
             case FUTURE:
-                bookings = repository.findAllFutureByOwnerId(userId);
+                bookings = repository.findAllFutureByOwnerId(userId, pageable);
                 break;
             case CURRENT:
-                bookings = repository.findAllCurrentByOwnerId(userId);
+                bookings = repository.findAllCurrentByOwnerId(userId, pageable);
                 break;
             case PAST:
-                bookings = repository.findAllPastByOwnerId(userId);
+                bookings = repository.findAllPastByOwnerId(userId, pageable);
                 break;
             case WAITING:
                 bookings = repository
-                        .findAllByItemUserIdAndStateType(userId, StateType.WAITING);
+                        .findAllByItemUserIdAndStateType(userId, StateType.WAITING, pageable);
                 break;
             case REJECTED:
                 bookings = repository
-                        .findAllByItemUserIdAndStateType(userId, StateType.REJECTED);
+                        .findAllByItemUserIdAndStateType(userId, StateType.REJECTED, pageable);
                 break;
         }
         return BookingMapper.toBookingsDto(bookings);
+    }
+
+    boolean isCoincidence(Long ownerId, Long userId) {
+        return Objects.equals(ownerId, userId);
     }
 }

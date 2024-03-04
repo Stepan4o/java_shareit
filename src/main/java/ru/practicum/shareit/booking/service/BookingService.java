@@ -8,11 +8,11 @@ import java.util.List;
 public interface BookingService {
     BookingDto add(BookingDtoIn bookingDtoIn, Long userId);
 
-    BookingDto patchUpdate(Long userId, Long bookingId, boolean bool);
+    BookingDto update(Long userId, Long bookingId, boolean isApprove);
 
     BookingDto getById(Long bookingId, Long userId);
 
-    List<BookingDto> getAllByUserId(Long userId, String state);
+    List<BookingDto> getAllByUserId(Long userId, String state, Integer from, Integer size);
 
-    List<BookingDto> getAllByOwnerId(Long userId, String state);
+    List<BookingDto> getAllByOwnerId(Long userId, String state, Integer from, Integer size);
 }

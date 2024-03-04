@@ -9,7 +9,11 @@ import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
+
+import static ru.practicum.shareit.utils.Constants.HEADER_USER_ID;
 
 @Slf4j
 @Validated
@@ -17,12 +21,11 @@ import java.util.List;
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 public class BookingController {
-    private static final String HEADER_USER_ID = "X-Sharer-User-Id";
 
     private final BookingService service;
 
     @PostMapping
-    public BookingDto add(
+    public BookingDto addNewBooking(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @Valid @RequestBody BookingDtoIn bookingDtoIn
     ) {
@@ -32,18 +35,18 @@ public class BookingController {
     }
 
     @PatchMapping("/{bookingId}")
-    public BookingDto patchUpdate(
+    public BookingDto approveBooking(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @PathVariable Long bookingId,
-            @RequestParam(value = "approved") boolean bool
+            @RequestParam(value = "approved") boolean isApproved
     ) {
 
-        log.debug("PATCH: /bookings/{}?approved={} | userId: {}", bookingId, bool, userId);
-        return service.patchUpdate(userId, bookingId, bool);
+        log.debug("PATCH: /bookings/{}?approved={} | userId: {}", bookingId, isApproved, userId);
+        return service.update(userId, bookingId, isApproved);
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto getById(
+    public BookingDto getBooking(
             @PathVariable Long bookingId,
             @RequestHeader(HEADER_USER_ID) Long userId
     ) {
@@ -53,22 +56,26 @@ public class BookingController {
     }
 
     @GetMapping("/owner")
-    public List<BookingDto> getAllByOwner(
+    public List<BookingDto> getAllByOwnerId(
             @RequestParam(required = false, defaultValue = "ALL") String state,
-            @RequestHeader(HEADER_USER_ID) Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId,
+            @RequestParam(value = "from", defaultValue = "0") @Min(0) Integer from,
+            @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(20) Integer size
     ) {
 
-        log.debug("GET: /bookings/owner?state={} | userId: {}", state, userId);
-        return service.getAllByOwnerId(userId, state);
+        log.debug("GET: /bookings/owner?state={}&from={}&size={} | userId: {}", state, from, size, userId);
+        return service.getAllByOwnerId(userId, state, from, size);
     }
 
     @GetMapping
     public List<BookingDto> gelAllByUserId(
             @RequestParam(required = false, defaultValue = "ALL") String state,
-            @RequestHeader(HEADER_USER_ID) Long userId
+            @RequestHeader(HEADER_USER_ID) Long userId,
+            @RequestParam(value = "from", defaultValue = "0") @Min(0) Integer from,
+            @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(20) Integer size
     ) {
 
-        log.debug("GET: /bookings?state={} | userId: {}", state, userId);
-        return service.getAllByUserId(userId, state);
+        log.debug("GET: /bookings?state={}&from={}&size={} | userId: {}", state, from, size, userId);
+        return service.getAllByUserId(userId, state, from, size);
     }
 }

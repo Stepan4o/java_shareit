@@ -1,30 +1,27 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.request.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.utils.Create;
 import ru.practicum.shareit.utils.Update;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @AllArgsConstructor
-public class ItemDtoIn {
+@NoArgsConstructor
+public class ItemRequestDtoIn {
 
     @NotBlank(groups = {Create.class})
-    @Size(max = 255, groups = {Create.class, Update.class})
-    private String name;
-
-    @NotBlank(groups = {Create.class})
-    @Size(max = 255, groups = {Create.class, Update.class})
+    @Size(max = 1000, groups = {Create.class, Update.class})
     private String description;
 
-    @NotNull(groups = {Create.class})
-    private Boolean available;
+    private LocalDateTime creation = LocalDateTime.now();
 
     private Long requestId;
 }

@@ -2,18 +2,23 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.AlreadyExistException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.user.model.UserDto;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserRepository;
-import ru.practicum.shareit.user.model.UserDtoIn;
+import ru.practicum.shareit.user.dto.UserDtoIn;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+
+import static ru.practicum.shareit.utils.Constants.EMAIL_ALREADY_EXIST;
+import static ru.practicum.shareit.utils.Constants.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -23,41 +28,41 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
     @Override
-    public UserDto getUserById(Long id) {
-        User user = repository.findById(id).orElseThrow(
-                () -> new NotFoundException(
-                        String.format("Пользователь с id:%d не найден", id)
-                ));
-        return UserMapper.toUserDto(user);
+    public UserDto getById(Long userId) {
+        User savedUser = getUserIfExist(userId);
+        return UserMapper.toUserDto(savedUser);
     }
 
     @Override
-    public UserDto createUser(UserDtoIn userDtoIn) {
-        User user = UserMapper.toUser(userDtoIn);
-        return UserMapper.toUserDto(repository.save(user));
+    public UserDto add(UserDtoIn userDtoIn) {
+        try {
+            User newUser = repository.save(UserMapper.toUser(userDtoIn));
+            return UserMapper.toUserDto(newUser);
+        } catch (DataIntegrityViolationException exception) {
+            throw new AlreadyExistException(String.format(
+                    EMAIL_ALREADY_EXIST, userDtoIn.getEmail()
+            ));
+        }
     }
 
     @Override
-    public List<UserDto> getAllUsers() {
+    public List<UserDto> getAll() {
         List<User> users = repository.findAll();
         return UserMapper.toUsersDto(users);
     }
 
     @Override
-    public UserDto patchUpdateUser(UserDtoIn userDtoIn, Long id) {
-        User user = repository.findById(id).orElseThrow(
-                () -> new NotFoundException(
-                        String.format("Пользователь с id:%d не найден", id)
-                ));
+    public UserDto updateById(UserDtoIn userDtoIn, Long userId) {
+        User savedUser = getUserIfExist(userId);
 
-        User updatedUser = updateUserFields(user, userDtoIn);
+        User updatedUser = updateUserFields(savedUser, userDtoIn);
         repository.save(updatedUser);
         return UserMapper.toUserDto(updatedUser);
     }
 
     @Override
-    public void deleteUserById(Long id) {
-        repository.deleteById(id);
+    public void deleteById(Long userId) {
+        repository.deleteById(userId);
     }
 
     private User updateUserFields(User user, UserDtoIn userDtoIn) {
@@ -80,5 +85,12 @@ public class UserServiceImpl implements UserService {
             }
         });
         return user;
+    }
+
+    private User getUserIfExist(Long userId) {
+        return repository.findById(userId).orElseThrow(
+                () -> new NotFoundException(
+                        String.format(USER_NOT_FOUND, userId)
+                ));
     }
 }
