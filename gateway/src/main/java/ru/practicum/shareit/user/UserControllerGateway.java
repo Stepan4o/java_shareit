@@ -10,6 +10,7 @@ import ru.practicum.shareit.utils.Create;
 import ru.practicum.shareit.utils.Update;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor

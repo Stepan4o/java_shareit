@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
     @Override
-    public UserDto getById(Long userId) {
+    public UserDto getById(long userId) {
         User savedUser = getUserIfExist(userId);
         return UserMapper.toUserDto(savedUser);
     }
@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateById(UserDtoIn userDtoIn, Long userId) {
+    public UserDto updateById(UserDtoIn userDtoIn, long userId) {
         User savedUser = getUserIfExist(userId);
 
         User updatedUser = updateUserFields(savedUser, userDtoIn);
@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteById(Long userId) {
+    public void deleteById(long userId) {
         repository.deleteById(userId);
     }
 
@@ -87,7 +87,7 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
-    private User getUserIfExist(Long userId) {
+    private User getUserIfExist(long userId) {
         return repository.findById(userId).orElseThrow(
                 () -> new NotFoundException(
                         String.format(USER_NOT_FOUND, userId)
