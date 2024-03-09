@@ -21,7 +21,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT     b FROM Booking AS b " +
             "WHERE     b.user.id = ?1 " +
-            "AND       current_timestamp BETWEEN b.start AND b.end ")
+            "AND       now() BETWEEN b.start AND b.end ")
     List<Booking> findAllByUserIdAndStateCurrent(long userId, Pageable pageable);
 
     @Query("SELECT     b FROM Booking AS b " +

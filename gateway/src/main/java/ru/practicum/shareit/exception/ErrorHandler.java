@@ -16,13 +16,42 @@ import java.util.Objects;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler
+    @ExceptionHandler({
+            MissingServletRequestParameterException.class,
+            MissingRequestHeaderException.class,
+            NotValidBookingDateTime.class,
+            UnknownStateException.class
+    })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequestException(
-            final MissingServletRequestParameterException exception
+            final Exception exception
     ) {
-        String param = exception.getParameterName();
-        return new ErrorResponse(String.format("Передан некорректный параметр : %s", param));
+        switch (exception.getClass().getSimpleName()) {
+
+            case "MissingServletRequestParameterException":
+                String param = ((MissingServletRequestParameterException) exception).getParameterName();
+                log.error("Передан некорректный параметр: {}", param);
+                return new ErrorResponse(
+                        String.format("Передан некорректный параметр: %s", param)
+                );
+
+            case "MissingRequestHeaderException":
+                String headerName = ((MissingRequestHeaderException) exception).getHeaderName();
+                log.error("Некорректное значение {}", headerName);
+                return new ErrorResponse(
+                        String.format("Не корректное значение %s", headerName)
+                );
+
+            case "UnknownStateException":
+                String incorrectState = ((UnknownStateException) exception).getState();
+                log.error("Передан некорректный параметр: {}", incorrectState);
+                return new ErrorResponse(
+                        String.format(exception.getMessage(), incorrectState)
+                );
+
+            default:
+                return new ErrorResponse(exception.getMessage());
+        }
     }
 
     @ExceptionHandler
@@ -39,24 +68,6 @@ public class ErrorHandler {
                 String.format("Некорректные данные -> '%s' : %s",
                         error.getField(),
                         error.getDefaultMessage())
-        );
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleBookingDateTimeException(
-            final NotValidBookingDateTime exception
-    ) {
-        return new ErrorResponse(exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleNotValidStateException(
-            final UnknownStateException exception
-    ) {
-        return new ErrorResponse(
-                String.format(exception.getMessage(), exception.getState())
         );
     }
 }

@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.StateType;
 import ru.practicum.shareit.exception.NotValidBookingDateTime;
-import ru.practicum.shareit.exception.UnknownStateException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;

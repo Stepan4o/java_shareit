@@ -47,15 +47,6 @@ public class BookingControllerTest {
             .booker(UserDto.BookerDto.builder().id(1L).build())
             .item(ItemDto.ItemForBookingDto.builder().id(1L).name("item").build())
             .build();
-    private final BookingDtoIn bookingStartBeforeNow = BookingDtoIn.builder()
-            .start(LocalDateTime.now().minusHours(5))
-            .end(LocalDateTime.now().plusHours(10))
-            .itemId(1L)
-            .build();
-    private final BookingDtoIn bookingNullStart = BookingDtoIn.builder()
-            .end(LocalDateTime.now().plusHours(4))
-            .itemId(1L)
-            .build();
 
     @Test
     @SneakyThrows

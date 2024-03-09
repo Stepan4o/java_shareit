@@ -56,8 +56,14 @@ public class UserServiceImpl implements UserService {
         User savedUser = getUserIfExist(userId);
 
         User updatedUser = updateUserFields(savedUser, userDtoIn);
-        repository.save(updatedUser);
-        return UserMapper.toUserDto(updatedUser);
+        try {
+            return UserMapper.toUserDto(repository.save(updatedUser));
+        } catch (DataIntegrityViolationException exception) {
+            throw new AlreadyExistException(String.format(
+                    EMAIL_ALREADY_EXIST, userDtoIn.getEmail()
+            ));
+        }
+
     }
 
     @Override

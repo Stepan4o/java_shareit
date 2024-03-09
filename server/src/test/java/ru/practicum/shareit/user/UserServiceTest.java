@@ -104,35 +104,30 @@ class UserServiceTest {
 
     @Test
     void updateById_updatingUserShouldBeDoneOnlyWithAvailableFields() {
+        UserDtoIn newFieldForUpdate = new UserDtoIn(id, nameForUpdate, emailForUpdate);
         when(repository.findById(id)).thenReturn(Optional.of(user));
+        user.setName(nameForUpdate);
+        user.setEmail(emailForUpdate);
+        when(repository.save(user)).thenReturn(user);
 
-        userDtoIn.setName(nameForUpdate);
-        userDtoIn.setEmail(emailForUpdate);
-
-        User savedUser = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-
+        UserDto actualDto = service.updateById(newFieldForUpdate, id);
         assertAll(
-                () -> assertNotNull(savedUser),
-                () -> assertNotEquals(savedUser.getName(), userDtoIn.getName()),
-                () -> assertNotEquals(savedUser.getEmail(), userDtoIn.getEmail())
+                () -> assertNotNull(actualDto),
+                () -> assertEquals(actualDto.getName(), nameForUpdate),
+                () -> assertEquals(actualDto.getEmail(), emailForUpdate)
         );
+    }
 
-        UserDto actualUserWithNewFields = service.updateById(userDtoIn, id);
+    @Test
+    void updateById_shouldThrowAlreadyExistException_whenTryToUpdateExistsEmail() {
+        when(repository.findById(id)).thenReturn(Optional.of(user));
+        when(repository.save(any())).thenThrow(DataIntegrityViolationException.class);
+
+        AlreadyExistException exception = assertThrows(AlreadyExistException.class, () -> service.updateById(userDtoIn, id));
         assertAll(
-                () -> assertNotNull(actualUserWithNewFields),
-                () -> assertEquals(UserMapper.toUserDto(savedUser), actualUserWithNewFields)
-        );
-
-        userDtoIn.setName(null);
-        userDtoIn.setEmail(null);
-
-        UserDto actualUserWithSameFields = service.updateById(userDtoIn, id);
-        assertAll(
-                () -> assertNotNull(actualUserWithSameFields.getName(), "name не должно быть null"),
-                () -> assertNotNull(actualUserWithSameFields.getEmail(), "email не должно быть null"),
-                () -> assertEquals(actualUserWithSameFields.getName(), nameForUpdate, "name не совпадает"),
-                () -> assertEquals(actualUserWithSameFields.getEmail(), emailForUpdate, "email не совпадает")
+                () -> assertNotNull(exception),
+                () -> assertNotNull(exception.getLocalizedMessage()),
+                () -> assertEquals(String.format(EMAIL_ALREADY_EXIST, email), exception.getMessage())
         );
     }
 
