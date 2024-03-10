@@ -19,55 +19,40 @@ public class ErrorHandler {
     @ExceptionHandler({
             MissingServletRequestParameterException.class,
             MissingRequestHeaderException.class,
-            NotValidBookingDateTime.class,
-            UnknownStateException.class
+            UnknownStateException.class,
+            MethodArgumentNotValidException.class,
+            NotValidBookingDateTime.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequestException(
             final Exception exception
     ) {
-        switch (exception.getClass().getSimpleName()) {
-
-            case "MissingServletRequestParameterException":
-                String param = ((MissingServletRequestParameterException) exception).getParameterName();
-                log.error("Передан некорректный параметр: {}", param);
-                return new ErrorResponse(
-                        String.format("Передан некорректный параметр: %s", param)
-                );
-
-            case "MissingRequestHeaderException":
-                String headerName = ((MissingRequestHeaderException) exception).getHeaderName();
-                log.error("Некорректное значение {}", headerName);
-                return new ErrorResponse(
-                        String.format("Не корректное значение %s", headerName)
-                );
-
-            case "UnknownStateException":
-                String incorrectState = ((UnknownStateException) exception).getState();
-                log.error("Передан некорректный параметр: {}", incorrectState);
-                return new ErrorResponse(
-                        String.format(exception.getMessage(), incorrectState)
-                );
-
-            default:
-                return new ErrorResponse(exception.getMessage());
+        if (exception instanceof MissingServletRequestParameterException) {
+            String param = ((MissingServletRequestParameterException) exception).getParameterName();
+            log.error("Передан некорректный параметр: {}", param);
+            return new ErrorResponse(
+                    String.format("Передан некорректный параметр: %s", param)
+            );
+        } else if (exception instanceof MissingRequestHeaderException) {
+            String headerName = ((MissingRequestHeaderException) exception).getHeaderName();
+            log.error("Некорректное значение {}", headerName);
+            return new ErrorResponse(
+                    String.format("Не корректное значение %s", headerName)
+            );
+        } else if (exception instanceof UnknownStateException) {
+            String incorrectState = ((UnknownStateException) exception).getState();
+            log.error("Передан некорректный параметр: {}", incorrectState);
+            return new ErrorResponse(
+                    String.format(exception.getMessage(), incorrectState)
+            );
+        } else if (exception instanceof MethodArgumentNotValidException) {
+            FieldError error = Objects.requireNonNull(((MethodArgumentNotValidException) exception).getFieldError());
+            log.error("Некорректные данные -> '{}' : {}", error.getField(), error.getDefaultMessage());
+            return new ErrorResponse(
+                    String.format("Некорректные данные -> '%s' : %s", error.getField(), error.getDefaultMessage())
+            );
+        } else {
+            return new ErrorResponse(exception.getMessage());
         }
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidException(
-            final MethodArgumentNotValidException exception
-    ) {
-        FieldError error = Objects.requireNonNull(exception.getFieldError());
-        log.error("Некорректные данные -> '{}' : {}",
-                error.getField(),
-                error.getDefaultMessage()
-        );
-        return new ErrorResponse(
-                String.format("Некорректные данные -> '%s' : %s",
-                        error.getField(),
-                        error.getDefaultMessage())
-        );
     }
 }
