@@ -10,7 +10,7 @@
 3. Ветка [add-item-requests](https://github.com/Stepan4o/java_shareit/tree/add-item-requests) : Добавление функциональности создания запросов на желаемую вещь с её кратким описанием, реализации получения данных с постраничной пагинацией. Покрытие кода тестами Junit5, Mockito;
 4. Ветка [add-docker](https://github.com/Stepan4o/java_shareit/tree/add-docker) : Реализация микросервисной архитектуры. Приложение разбито на два модуля server и gateway. Настроен запуск приложения через Docker:
    - **shareit-gateway** http://localhost:8080 - перенесена оснавная логика обработки входных данных от пользователя для последующей передачи уже валидных данных в основной сервис 
-   - **shareit-server** http://localhost:9090 - перенесена вся логика касающаяся обращений к базе данных.
+   - **shareit-server** http://localhost:9090 - перенесена вся логика касающаяся взаимодействий с базой данных.
    > Инструкция по развёртыванию приложения:
    >> mvn clean package / mvn install / docker-compouse build / docker-compouse up 
 
